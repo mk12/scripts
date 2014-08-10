@@ -1,6 +1,6 @@
 # Scripts
 
-These are just some Bash scripts that I wrote and find useful.
+These are just some scripts that I wrote and find useful.
 
 ## License
 
