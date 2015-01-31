@@ -8,22 +8,22 @@
 # entries past midnight sometimes but never early in the morning.
 
 name=$(basename "$0")
-usage="usage: $name [-hfd] [-t file] [-j file] [-n num] [-v[+|-]val[ymwdHMS]]"
+usage="usage: $name [-hfdl] [-t file] [-j file] [-v[+|-]val[ymwdHMS]]"
 
 today=~/ia/Journal/Today.md
 journal=~/ia/Journal/Journal.md
 force=false
-tailn=0
 offset=-5H
+language=false
 
-while getopts ':t:j:n:v:hfd' opt; do
+while getopts ':t:j:n:v:hfdl' opt; do
 	case $opt in
 		f) force=true;;
 		t) today=$OPTAG;;
 		j) journal=$OPTARG;;
-		n) tailn=$OPTARG;;
 		v) offset=$OPTARG;;
 		d) offset='-1d';;
+		l) language=true;;
 		h)
 			echo "$usage"
 			exit 0
@@ -60,4 +60,12 @@ day=$(date $opts +%e | xargs)
 entry+="# $weekday, $day $month $year"$'\n\n'
 entry+=$(< $today)
 echo -n "$entry" >> $journal
-> $today
+if $language; then
+	if [[ "02468" == *"${day: -1}"* ]]; then
+		echo -n "English" > $today
+	else
+		echo -n "Français" > $today
+	fi
+else
+	> $today
+fi
