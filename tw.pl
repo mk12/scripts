@@ -11,10 +11,11 @@ use utf8;
 use charnames ':full';
 binmode(STDOUT, ":utf8");
 
-use LWP::Simple qw(get);
-use HTML::Entities qw(decode_entities);
-use Getopt::Long qw(GetOptions);
+use Browser::Open qw(open_browser);
 use File::Basename qw(basename);
+use Getopt::Long qw(GetOptions);
+use HTML::Entities qw(decode_entities);
+use LWP::Simple qw(get);
 
 sub show {
 	my ($s) = @_;
@@ -24,15 +25,15 @@ sub show {
 
 my $P = basename($0);
 
-my $usage = "usage: $P [--from LANG] [--to LANG] [--src wr | --src wiki] WORD\n";
+my $usage_ft = '[--from LANG] [--to LANG]';
+my $usage_src = '[--src wr | --src wiki]';
+my $usage = "usage: $P $usage_ft $usage_src [--browser] WORD\n";
 
-my $from_lang = 'en';
-my $to_lang = 'fr';
-my $source = 'wr';
 GetOptions(
-	'from|f=s' => \$from_lang,
-	'to|t=s' => \$to_lang,
-	'src|s=s' => \$source,
+	'from|f=s' => \(my $from_lang = 'en'),
+	'to|t=s' => \(my $to_lang = 'fr'),
+	'src|s=s' => \(my $source = 'wr'),
+	'browser|b' => \(my $browser)
 ) or die $usage;
 
 if (scalar(@ARGV) <= 0) {
@@ -42,8 +43,12 @@ if (scalar(@ARGV) <= 0) {
 if ($source eq 'wr') {
 	my $name = join('%20', @ARGV);
 	my $url = "http://wordreference.com/$from_lang$to_lang/$name";
-	my $html = get($url);
+	if ($browser) {
+		open_browser($url);
+		exit 0;
+	}
 
+	my $html = get($url);
 	my $no_entry = 'No translation found for';
 	if (not defined $html or index($html, $no_entry) != -1) {
 		die "$P: $name: no such entry\n";
@@ -60,8 +65,12 @@ if ($source eq 'wr') {
 } elsif ($source eq 'wiki') {
 	my $name = join('_', @ARGV);
 	my $url = "http://$from_lang.wikipedia.org/wiki/$name";
-	my $html = get($url);
+	if ($browser) {
+		open_browser($url);
+		exit 0;
+	}
 
+	my $html = get($url);
 	if (not defined $html) {
 		die "$P: $name: no such article\n";
 	}
