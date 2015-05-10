@@ -18,9 +18,13 @@ use HTML::Entities qw(decode_entities);
 use LWP::Simple qw(get);
 
 sub show {
-	my ($s) = @_;
+	my ($s, $g) = @_;
 	$s =~ s/^\s+|\s+$//g;
-	print decode_entities($s) . "\n";
+	print decode_entities($s);
+	if ($g) {
+		print ' (' . $g . ')';
+	}
+	print "\n";
 }
 
 my $P = basename($0);
@@ -59,8 +63,8 @@ if ($source eq 'wr') {
 		die "$P: $name: no exact entry\n";
 	}
 
-	if ($html =~ /< *td +class *= *["']ToWrd['"].*?>(.+?)</) {
-		show $1;
+	if ($html =~ /< *td +class *= *["']ToWrd['"].*?>(.+?)<(?:.*?tooltip +POS2['"].*?>(.+?)<)?/) {
+		show $1, $2;
 	}
 } elsif ($source eq 'wiki') {
 	my $name = join('_', @ARGV);
