@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # This script compiles my blog and puts the HTML in my website directory.
+# With the "-p username", uses rsync to publish the blog.
 
 name=$(basename "$0")
-usage="usage: $name [-h]"
+usage="usage: $name [-h] [-p | --publish]"
 
 if [[ $1 == "-h" || $1 == "--help" ]]; then
 	echo "$usage"
@@ -14,23 +15,36 @@ blog=~/icloud/blog
 dest=~/Sites/mk/blog
 partial_dir=$blog/themes/equanimity/layouts/partials
 
-# The head.html file used for development has a different styles.css path (it
-# uses the symlinks I created in the public folder). For deployment, it should
-# use the same CSS file as the rest of the website.
-mv "$partial_dir/head.html" "$partial_dir/head-dev.html"
-mv "$partial_dir/head-deploy.html" "$partial_dir/head.html"
-hugo -s "$blog" -d "$dest"
-mv "$partial_dir/head.html" "$partial_dir/head-deploy.html"
-mv "$partial_dir/head-dev.html" "$partial_dir/head.html"
+# Switch to the deployment head file.
+echo '{{ partial "head-deploy.html" . }}' > "$partial_dir/head.html"
 
+# Compile the blog and deploy it.
+hugo -s "$blog" -d "$dest"
+
+# Return to the development head file.
+echo '{{ partial "head-dev.html" . }}' > "$partial_dir/head.html"
+
+# Get all HTML files.
 files="$(find "$dest/post" -type f -name "index.html")"
 
+# Inline all SVG content (so that they can use the webfonts).
 for f in $files; do
 	fmap.sh "inline_svg $dest/images" $f
 done
 
-if [[ $1 == "clean" ]]; then
-	mv $dest/images/*.svg ~/.Trash
+# The files here are not needed.
+trash="$HOME/.Trash/post-$(date +%s)"
+mkdir "$trash"
+mv $dest/images/*.svg "$trash"
+mv $dest/fonts "$trash"
+mv $dest/js "$trash"
+mv $dest/404.html "$trash"
+find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
+
+# Publish to the server.
+if [[ $1 == "-p" || $1 == "--publish" ]]; then
+	rsync -avz -e ssh $dest/ $2@ssh.phx.nearlyfreespeech.net:/home/public/blog
 fi
 
+# I usually publish a few days after creating the Markdown file.
 echo "Don't forget to change the post date!"
