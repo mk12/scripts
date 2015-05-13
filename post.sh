@@ -43,7 +43,7 @@ find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
 
 # Publish to the server.
 if [[ $1 == "-p" || $1 == "--publish" ]]; then
-	rsync -avz -e ssh $dest/ $2@ssh.phx.nearlyfreespeech.net:/home/public/blog
+	rsync -avz -e ssh --delete $dest/ $2@ssh.phx.nearlyfreespeech.net:/home/public/blog
 fi
 
 # I usually publish a few days after creating the Markdown file.
