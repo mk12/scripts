@@ -36,9 +36,14 @@ my $usage = "usage: $P $usage_ft $usage_src [--browser] WORD\n";
 GetOptions(
 	'from|f=s' => \(my $from_lang = 'en'),
 	'to|t=s' => \(my $to_lang = 'fr'),
+	'reverse|r' => \(my $reverse),
 	'src|s=s' => \(my $source = 'wr'),
 	'browser|b' => \(my $browser)
 ) or die $usage;
+
+if ($reverse) {
+	($from_lang, $to_lang) = ($to_lang, $from_lang);
+}
 
 if (scalar(@ARGV) <= 0) {
 	die "$P: expecting word to translate\n";
