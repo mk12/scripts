@@ -11,7 +11,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
 	exit 0
 fi
 
-blog=~/icloud/blog
+blog=~/Documents/blog
 dest=~/Sites/mk/blog
 partial_dir=$blog/themes/equanimity/layouts/partials
 
@@ -27,7 +27,7 @@ echo '{{ partial "head-dev.html" . }}' > "$partial_dir/head.html"
 # Get all HTML files.
 files="$(find "$dest/post" -type f -name "index.html")"
 
-# Inline all SVG content (so that they can use the webfonts).
+# Inline all SVG content (so that they can use the web fonts).
 for f in $files; do
 	fmap.sh "inline_svg $dest/images" $f
 done
