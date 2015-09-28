@@ -28,7 +28,9 @@ if ($custom_time && $custom_time =~ $time_re) {
 	$dt->set(hour => $1, minute => $2);
 }
 
-my $url = 'http://theclassicalstation.org/playing_sun.shtml';
+my @weekdays = qw(mon tue wed thu fri sat sun);
+my $abbrev = $weekdays[$dt->day_of_week-1];
+my $url = "http://theclassicalstation.org/playing_$abbrev.shtml";
 my $html = get($url);
 if (not defined $html) {
 	die "error: GET $url failed\n";
