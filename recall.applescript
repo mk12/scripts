@@ -5,6 +5,7 @@ tell application "Terminal"
 	set lineCount to (do shell script "wc -l < " & journal) as integer
 	set randomLine to (random number from 1 to lineCount) as integer
 	activate
-	do script "vim -c ':call ToggleBackground()' -c ':Goyo' -c '" & randomLine & "' " & journal
+	do script "vim -c ':Goyo' -c ':set bg=light' " & journal & ":" & randomLine
+	set current settings of first window to settings set "Solarized Light"
 	tell application "System Events" to keystroke "f" using {command down, control down}
 end tell
