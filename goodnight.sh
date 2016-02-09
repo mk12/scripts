@@ -50,15 +50,16 @@ else
 	[[ -s $today ]] || (echo "$name: $today: file is empty" >&2; exit 1)
 fi
 
-entry=$'\n\n'
 opts="-v $offset"
 year=$(date $opts +%Y)
 month=$(date $opts +%B)
 weekday=$(date $opts +%A)
 day=$(date $opts +%e | xargs)
 
+entry=$'\n'
 entry+="# $weekday, $day $month $year"$'\n\n'
 entry+=$(< $today)
+entry+=$'\n'
 echo -n "$entry" >> $journal
 if $language; then
 	if [[ "02468" == *"${day: -1}"* ]]; then
