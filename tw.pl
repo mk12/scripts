@@ -63,13 +63,17 @@ if ($source eq 'wr') {
 		die "$P: $name: no such entry\n";
 	}
 
-	my $no_exact = "WordReference can't translate this exact phrase";
-	if (index($html, $no_exact) != -1) {
+	my $no_exact1 = "WordReference can't translate this exact phrase";
+	my $no_exact2 = "WordReference ne peut pas traduire cette expression";
+	if (index($html, $no_exact1) != -1 || index($html, $no_exact2) != -1) {
 		die "$P: $name: no exact entry\n";
 	}
 
-	if ($html =~ /< *td +class *= *["']ToWrd['"].*?>(.+?)<(?:.*?tooltip +POS2['"].*?>(.+?)<)?/) {
+	my $pattern = qr/< *td +class *= *["']ToWrd['"].*?>(.+?)<(?:.*?tooltip +POS2['"].*?>(.+?)<)?/;
+	if ($html =~ $pattern && substr($html, $+[0]) =~ $pattern) {
 		show $1, $2;
+	} else {
+		die "$P: $name: failed to parse page\n";
 	}
 } elsif ($source eq 'wiki') {
 	my $name = join('_', @ARGV);
