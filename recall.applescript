@@ -1,6 +1,6 @@
 #!/usr/bin/env osascript
 
-set journal to "~/ia/Journal/Journal.md"
+set journal to "~/ia/Journal/Journal.txt"
 tell application "Terminal"
 	set lineCount to (do shell script "wc -l < " & journal) as integer
 	set randomLine to (random number from 1 to lineCount) as integer

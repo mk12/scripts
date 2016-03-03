@@ -1,17 +1,13 @@
 #!/bin/bash
 
-# This script moves the contents of Today.md to the end of Journal.md. (I use
-# Today.md because Journal.md is a huge file that will only get bigger, and I
-# don't want to have to scroll to the bottom or deal with slow loading.) The
-# entry is preceded by a heading of the form "# Weekday, Day Month Year". By
-# default, the date used is the date five hours ago because I write journal
-# entries past midnight sometimes but never early in the morning.
+# This script moves the contents of Today.txt to the end of Journal.txt,
+# preceded by a heading of the form "# Weekday, Day Month Year".
 
 name=$(basename "$0")
 usage="usage: $name [-hfdl] [-t file] [-j file] [-v[+|-]val[ymwdHMS]]"
 
-today=~/ia/Journal/Today.md
-journal=~/ia/Journal/Journal.md
+today=~/ia/Journal/Today.txt
+journal=~/ia/Journal/Journal.txt
 force=false
 offset=-5H
 language=false
