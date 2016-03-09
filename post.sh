@@ -11,7 +11,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
 	exit 0
 fi
 
-blog=~/Documents/blog
+blog=~/icloud/blog
 dest=~/Sites/mk/blog
 partial_dir=$blog/themes/equanimity/layouts/partials
 
