@@ -5,8 +5,8 @@
 name=$(basename "$0")
 usage="usage: $name COMMAND [on DATE | BEGIN [END]]
 
-  Cmd  Name              On  Interval
-  ---  ----------------  --  --------
+  Cmd  Name              On  Begin/End
+  ---  ----------------  --  ---------
   a    Accounts          X   X
   b    Balance sheet     X
   c    Cash flow             X
@@ -14,7 +14,7 @@ usage="usage: $name COMMAND [on DATE | BEGIN [END]]
   i    Income report         X
   n    Net income            X
   p    Payees            X   X
-  s    Summary
+  s    Summary           X
 "
 
 if (( $# < 1 || $# > 3 )); then
@@ -27,73 +27,98 @@ if [[ $1 == '-h' || $1 == '--help' ]]; then
 	exit 0
 fi
 
+# 'ON' commands report based on a moment in time.
+# 'BE' commands report based on a Begin/End time interval.
+all_cmds='abceinps'
+on_cmds='abps'
+be_cmds='aceinp'
+
 error() {
 	echo "$name: $1" >&2
 	exit 1
 }
 
-if [[ 'abceinps' != *${1:0:1}* ]]; then
+check_on() {
+	[[ $on_cmds == *${1:0:1}* ]] || error "$1: needs begin/end dates"
+}
+
+check_be() {
+	[[ $be_cmds == *${1:0:1}* ]] || error "$1: needs 'on' date"
+}
+
+if [[ $all_cmds != *${1:0:1}* ]]; then
 	error "$1: invalid command"
 fi
 
 case $# in
 	1)
-		[[ 'abps' == *${1:0:1}* ]] || error "$1: needs date interval"
+		check_on $1
 		;;
 	2)
 		[[ $2 != 'on' ]] || error "invalid use of 'on'"
-		[[ 'aceinp' == *${1:0:1}* ]] || error "$1: needs 'on' date"
+		check_be $1
 		begin=$2
 		;;
 	3)
 		if [[ $2 == 'on' ]]; then
-			[[ 'abp' == *${1:0:1}* ]] || error "$1: needs date interval"
+			check_on $1
 			end=$3
 		else
-			[[ 'aceinp' == *${1:0:1}* ]] || error "$1: needs 'on' date"
+			check_be $1
 			begin=$2
 			end=$3
 		fi
 		;;
 esac
 
+invoke() {
+	if [[ $begin != "" && $end != "" ]]; then
+		ledger -b "$begin" -e "$end" "$@"
+	elif [[ $begin != "" ]]; then
+		ledger -b "$begin" "$@"
+	elif [[ $end != "" ]]; then
+		ledger -e "$end" "$@"
+	else
+		ledger "$@"
+	fi
+}
+
 summary() {
+	if [[ $end == "" ]]; then
+		jan1='this year'
+	else
+		jan1=$(date -j -f '%Y/%m/%d' "$end" +'%Y' 2>/dev/null)
+		if [[ $jan1 == "" ]]; then
+			error "$end: summary requires YYYY/MM/DD"
+		fi
+	fi
+
 	echo "NET WORTH"
 	echo "========================================"
-	ledger -nE bal '^Assets' '^Liabilities'
+	invoke -nE bal '^Assets' '^Liabilities' || exit 1
 	echo
-	echo "NET INCOME (past month)"
+	echo "YTD NET INCOME"
 	echo "========================================"
-	ledger -b 'last month' -n --invert bal '^Expenses' '^Income'
+	begin=$jan1 invoke -n --invert bal '^Expenses' '^Income' || exit 1
 	echo
-	echo "DEBTS TO COLLECT"
+	echo "DUE FROM OTHERS"
 	echo "========================================"
-	ledger bal '^Assets:Due From'
+	invoke bal '^Assets:Due From' || exit 1
 	echo
-	echo "DEBTS TO PAY"
+	echo "DUE TO OTHERS"
 	echo "========================================"
-	ledger --invert bal '^Liabilities:Due To'
+	invoke --invert bal '^Liabilities:Due To' || exit 1
 	echo
 }
 
 case ${1:0:1} in
-	a) opts="-E accounts" ;;
-	b) opts="bal '^Assets' '^Liabilities'" ;;
-	c) opts="bal '^Assets'" ;;
-	e) opts="bal '^Expenses'" ;;
-	i) opts="--invert bal '^Income'" ;;
-	n) opts="--invert --depth 2 bal '^Income' '^Expenses'" ;;
-	p) opts="payees" ;;
+	a) invoke -E accounts ;;
+	b) invoke bal '^Assets' '^Liabilities' ;;
+	c) invoke bal '^Assets' ;;
+	e) invoke bal '^Expenses' ;;
+	i) invoke --invert bal '^Income' ;;
+	n) invoke --invert --depth 2 bal '^Income' '^Expenses' ;;
+	p) invoke payees ;;
 	s) summary; exit 0 ;;
 	?) error ;;
 esac
-
-if [[ $begin != "" && $end != "" ]]; then
-	ledger -b "$begin" -e "$end" $opts
-elif [[ $begin != "" ]]; then
-	ledger -b "$begin" $opts
-elif [[ $end != "" ]]; then
-	ledger -e "$end" $opts
-else
-	ledger $opts
-fi
