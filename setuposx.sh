@@ -17,7 +17,7 @@ status 'Installing Homebrew'
 status 'Installing Homebrew formulas'
 $br/brew install \
 	fish git vim tup fzf the_silver_searcher universal-ctags tmux \
-	reattach-to-user-namespace terminal-notifier ledger python3 ruby go
+	terminal-notifier ledger python3 ruby go
 
 status 'Installing pip3 packages'
 $br/pip3 install pygments
