@@ -15,6 +15,7 @@ usage="usage: $name COMMAND [on DATE | BEGIN [END]]
   n    Net income            X
   p    Payees            X   X
   s    Summary           X
+  x    Exchange gain         X
 "
 
 if (( $# < 1 || $# > 3 )); then
@@ -29,9 +30,9 @@ fi
 
 # 'ON' commands report based on a moment in time.
 # 'BE' commands report based on a Begin/End time interval.
-all_cmds='abceinps'
+all_cmds='abceinpsx'
 on_cmds='abps'
-be_cmds='aceinp'
+be_cmds='aceinpx'
 
 error() {
 	echo "$name: $1" >&2
@@ -119,6 +120,7 @@ case ${1:0:1} in
 	i) invoke --invert bal '^Income' ;;
 	n) invoke --invert --depth 2 bal '^Income' '^Expenses' ;;
 	p) invoke payees ;;
-	s) summary; exit 0 ;;
+	s) summary ;;
+	x) invoke --invert bal '^Exchange' ;;
 	?) error ;;
 esac
