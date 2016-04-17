@@ -25,6 +25,19 @@ $br/pip3 install pygments
 status 'Installing Ruby gems'
 $br/gem install pro
 
+status 'Installing Hack font'
+$br/brew cask install caskroom/fonts/font-hack
+
+status 'Installing terminal profiles'
+curl 'https://raw.githubusercontent.com/tomislav/'\
+'osx-terminal.app-colors-solarized/master/Solarized%20Dark.terminal' \
+	> '/tmp/Solarized Dark.terminal'
+curl 'https://raw.githubusercontent.com/tomislav/'\
+'osx-terminal.app-colors-solarized/master/Solarized%20Light.terminal' \
+	> '/tmp/Solarized Light.terminal'
+open '/tmp/Solarized Dark.terminal'
+open '/tmp/Solarized Light.terminal'
+
 status 'Generating an SSH key'
 echo -n 'Enter email address to use with Git: '
 read email_address
@@ -70,3 +83,4 @@ echo 'Manual steps:'
 echo '  1. Install apps from Mac App Store'
 echo '  2. Adjust System Preferences'
 echo '  3. Install fonts from ~/icloud/fonts'
+echo '  4. Make Solarized Dark default (and change font to Hack 14pt)'
