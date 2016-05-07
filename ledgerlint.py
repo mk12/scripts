@@ -45,8 +45,9 @@ for line in fileinput.input():
         if s == ";;; Transactions":
             mode = 1
     elif mode == 1:
+        xact = False
         if len(s) > 16 and s[4] == '/' and s[7] == '/' and s[10] == '=':
-            mode = 2
+            xact = True
             d = datetime.strptime(s[:10], DATE_FMT)
             aux_str = s[11:s.index(' ')]
             try:
@@ -62,6 +63,10 @@ for line in fileinput.input():
                 error("aux date is redundant")
             if aux > d:
                 error("aux date is later, should be earlier")
+        elif len(s) > 13 and s[4] == '/' and s[7] == '/':
+            xact = True
+        if xact:
+            mode = 2
             if '!' in s:
                 i = s.index('!')
             elif '*' in s:
@@ -84,7 +89,7 @@ for line in fileinput.input():
             mode = 1
             asserted = False
             continue
-        if '.' in s[:60]:
+        if '.' in s[:60] or (len(s) >= 60 and s[59] in DIGITS):
             if s[57] != '.':
                 error("value has misaligned '.'")
             if not s[58] in DIGITS:
