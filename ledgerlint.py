@@ -111,5 +111,5 @@ for line in fileinput.input():
         elif not asserted:
             if ('ATM' in payee or 'Transfer' in payee or 'Pay debt' in note or
                     'Collect debt' in note or 'Visa statement' in note or
-                    'domain' in note or 'Income:Salary' in s):
+                    'domain' in note or 'payroll' in note):
                 error("expected balance assertion")
