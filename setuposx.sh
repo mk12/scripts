@@ -30,6 +30,12 @@ $br/brew install go
 $br/brew cask install osxfuse
 $br/brew install homebrew/fuse/tup
 
+status 'Linking diff-highlight script'
+git_prefix=$(brew --prefix git)
+cp "$git_prefix/share/git-core/contrib/diff-highlight/diff-highlight" \
+	"$git_prefix/bin"
+$br/brew unlink git && $br/brew link git
+
 status 'Installing pip3 packages'
 $br/pip3 install pygments
 
