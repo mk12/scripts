@@ -17,7 +17,7 @@ status 'Installing Homebrew'
 status 'Installing Homebrew formulas'
 $br/brew install fish
 $br/brew install git
-$br/brew install vim
+$br/brew install neovim/neovim/neovim
 $br/brew install fzf
 $br/brew install the_silver_searcher
 $br/brew install ctags
@@ -90,7 +90,7 @@ status 'Symlinking dotfiles'
 $gh/dotfiles/link.sh
 
 status 'Installing Vim plugins'
-$br/vim +PlugInstall +qall
+$br/nvim +PlugInstall +qall
 
 status 'Symlinking ~/icloud and ~/ia'
 ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" $HOME/icloud
@@ -101,9 +101,8 @@ sudo chsh -s $br/fish $USER
 
 status 'Finished'
 echo 'Manual steps:'
-echo '  1. Set up iCloud"
-echo '  1. Install apps from Mac App Store'
-echo '  2. Adjust System Prefs: gestures, key repeat, caps lock'
-echo '  3. Install fonts from ~/icloud/fonts'
-echo '  4. Make Solarized Dark default'
-echo '  5. Set HOMEBREW_GITHUB_API_TOKEN in ~/.config/fish/secret.fish'
+echo '  1. Set up iCloud and adjust System Preferences.'
+echo '  2. Install apps from the Mac App Store.'
+echo '  3. Install fonts from ~/icloud/fonts.'
+echo '  4. Make Solarized Dark the default profile.'
+echo '  5. Set HOMEBREW_GITHUB_API_TOKEN in ~/.config/fish/secret.fish.'
