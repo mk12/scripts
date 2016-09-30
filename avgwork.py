@@ -5,6 +5,10 @@ import sys
 from datetime import datetime
 from icalendar import Calendar
 
+if len(sys.argv) != 2:
+    print("usage: avgwork.py FILE.ics", file=sys.stderr)
+    sys.exit(1)
+
 START = datetime(2016, 8, 29, tzinfo=pytz.timezone("US/Pacific"))
 
 with open(sys.argv[1], "r") as f:
