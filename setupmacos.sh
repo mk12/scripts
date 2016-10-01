@@ -27,6 +27,7 @@ $br/brew install ledger
 $br/brew install python3
 $br/brew install ruby
 $br/brew install go
+$br/brew install node
 $br/brew cask install osxfuse
 $br/brew install homebrew/fuse/tup
 
@@ -36,11 +37,14 @@ cp "$git_prefix/share/git-core/contrib/diff-highlight/diff-highlight" \
 	"$git_prefix/bin"
 $br/brew unlink git && $br/brew link git
 
-status 'Installing pip3 packages'
+status 'Installing Python packages'
 $br/pip3 install pygments
 
 status 'Installing Ruby gems'
 $br/gem install pro
+
+status 'Installing Go packages'
+$br/go get golang.org/x/tools/cmd/goimports
 
 status 'Installing Hack font'
 $br/brew cask install caskroom/fonts/font-hack
