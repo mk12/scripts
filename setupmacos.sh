@@ -30,6 +30,7 @@ $br/brew install go
 $br/brew install node
 $br/brew cask install osxfuse
 $br/brew install homebrew/fuse/tup
+$br/brew install httpie
 
 status 'Linking diff-highlight script'
 git_prefix=$(brew --prefix git)
