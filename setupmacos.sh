@@ -31,6 +31,7 @@ $br/brew install node
 $br/brew cask install osxfuse
 $br/brew install homebrew/fuse/tup
 $br/brew install httpie
+$br/brew install reattach-to-user-namespace
 
 status 'Linking diff-highlight script'
 git_prefix=$(brew --prefix git)
