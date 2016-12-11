@@ -33,12 +33,6 @@ $br/brew install homebrew/fuse/tup
 $br/brew install httpie
 $br/brew install reattach-to-user-namespace
 
-status 'Linking diff-highlight script'
-git_prefix=$(brew --prefix git)
-cp "$git_prefix/share/git-core/contrib/diff-highlight/diff-highlight" \
-	"$git_prefix/bin"
-$br/brew unlink git && $br/brew link git
-
 status 'Installing Python packages'
 $br/pip3 install pygments
 
