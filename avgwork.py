@@ -17,7 +17,13 @@ def hours_per_day(cal, start, end):
 
     for w in cal.walk():
         if w.get("summary") == "Work":
-            start = w.decoded("dtstart")
+            try:
+                start = w.decoded("dtstart")
+                w.decoded("dtend")
+            except KeyError:
+                continue
+            if not isinstance(start, datetime):
+                continue
             if start < START:
                 continue
             if start > END:
