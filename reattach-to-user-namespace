@@ -1,0 +1,9 @@
+#!/bin/bash
+
+RTUN=reattach-to-user-namespace
+
+if [ -x /usr/local/bin/$RTUN ]; then
+	$RTUN $@
+else
+	exec "$@"
+fi
