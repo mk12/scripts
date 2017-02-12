@@ -89,6 +89,9 @@ mkdir -p $HOME/.cabal/bin
 status 'Symlinking dotfiles'
 $gh/dotfiles/link.sh
 
+status 'Installing Tmux plugins'
+$br/git clone git@github.com:tmux-plugins/tpm ~/.tmux/plugins/tpm
+
 status 'Installing Vim plugins'
 $br/nvim +PlugInstall +qall
 
