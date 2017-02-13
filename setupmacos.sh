@@ -24,6 +24,7 @@ $br/brew install ctags
 $br/brew install tmux
 $br/brew install terminal-notifier
 $br/brew install ledger
+$br/brew install python
 $br/brew install python3
 $br/brew install ruby
 $br/brew install go
@@ -34,10 +35,11 @@ $br/brew install httpie
 $br/brew install reattach-to-user-namespace
 
 status 'Installing Python packages'
-$br/pip3 install pygments
+$br/pip install neovim
+$br/pip3 install neovim pygments
 
 status 'Installing Ruby gems'
-$br/gem install pro
+$br/gem install neovim pro
 
 status 'Installing Go packages'
 $br/go get golang.org/x/tools/cmd/goimports
