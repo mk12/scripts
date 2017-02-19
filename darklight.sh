@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # This script toggles between solarized dark and solarized light. It updates the
-# profiles of all open macOS terminals, and tmux color settings.
+# profiles of all open macOS terminals, and tmux color settings. When invoked
+# with the -t option, it just updates tmux to match the terminal color.
 
 light=~/.solarized_light
 
@@ -23,15 +24,32 @@ set_tmux() {
 		return
 	fi
 
-	tmux setw -g status-bg "$1" \; set -g status-left "#[fg=colour15,bg=colour4,bold] #S #[fg=colour4,bg=$1,nobold,nounderscore,noitalics]" \; set -g status-right "#[fg=colour10,bg=$1,nobold,nounderscore,noitalics]#[fg=colour7,bg=colour10] %I:%M %p  %d-%b-%Y " \; setw -g window-status-format "#[fg=colour10,bg=$1] #I #[fg=colour10,bg=$1] #W " \; setw -g window-status-current-format "#[fg=$1,bg=colour11,nobold,nounderscore,noitalics]#[fg=colour7,bg=colour11] #I #[fg=colour7,bg=colour11] #W #[fg=colour11,bg=$1,nobold,nounderscore,noitalics]"
+	case "$1" in
+		light) col="colour7" ;;
+		dark) col="colour0" ;;
+		*) return ;;
+	esac
+
+	tmux setw -g status-bg "$col" \; set -g status-left "#[fg=colour15,bg=colour4,bold] #S #[fg=colour4,bg=$col,nobold,nounderscore,noitalics]" \; set -g status-right "#[fg=colour10,bg=$col,nobold,nounderscore,noitalics]#[fg=colour7,bg=colour10] %I:%M %p  %d-%b-%Y " \; setw -g window-status-format "#[fg=colour10,bg=$col] #I #[fg=colour10,bg=$col] #W " \; setw -g window-status-current-format "#[fg=$col,bg=colour11,nobold,nounderscore,noitalics]#[fg=colour7,bg=colour11] #I #[fg=colour7,bg=colour11] #W #[fg=colour11,bg=$col,nobold,nounderscore,noitalics]"
 }
 
+# Update tmux settings on -t.
+if [[ $1 == "-t" ]]; then
+	if [[ -f $light ]]; then
+		set_tmux "light"
+	else
+		set_tmux "dark"
+	fi
+	exit 0
+fi
+
+# Otherwise, toggle color scheme.
 if [[ -f $light ]]; then
 	rm $light
 	set_terminal "Solarized Dark"
-	set_tmux "colour0"
+	set_tmux "dark"
 else
 	touch $light
 	set_terminal "Solarized Light"
-	set_tmux "colour7"
+	set_tmux "light"
 fi
