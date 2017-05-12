@@ -17,6 +17,7 @@ status 'Installing Homebrew'
 status 'Installing Homebrew formulas'
 $br/brew cask install osxfuse
 $br/brew install fish
+$br/brew install mosh
 $br/brew install git
 $br/brew install go
 $br/brew install httpie
