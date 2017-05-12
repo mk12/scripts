@@ -15,24 +15,25 @@ status 'Installing Homebrew'
 	https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 status 'Installing Homebrew formulas'
+$br/brew cask install osxfuse
 $br/brew install fish
 $br/brew install git
-$br/brew install neovim/neovim/neovim
-$br/brew install fzf
-$br/brew install the_silver_searcher
-$br/brew install ctags
-$br/brew install tmux
-$br/brew install terminal-notifier
+$br/brew install go
+$br/brew install httpie
 $br/brew install ledger
+$br/brew install neovim/neovim/neovim
+$br/brew install node
 $br/brew install python
 $br/brew install python3
-$br/brew install ruby
-$br/brew install go
-$br/brew install node
-$br/brew cask install osxfuse
-$br/brew install homebrew/fuse/tup
-$br/brew install httpie
 $br/brew install reattach-to-user-namespace
+$br/brew install ruby
+$br/brew install rust
+$br/brew install sshfs
+$br/brew install terminal-notifier
+$br/brew install the_silver_searcher
+$br/brew install tmux
+$br/brew install universal-ctags
+$br/brew install vim
 
 status 'Installing Python packages'
 $br/pip install neovim
@@ -43,9 +44,6 @@ $br/gem install neovim pro
 
 status 'Installing Go packages'
 $br/go get golang.org/x/tools/cmd/goimports
-
-status 'Installing Hack font'
-$br/brew cask install caskroom/fonts/font-hack
 
 status 'Installing terminal profiles'
 curl 'https://raw.githubusercontent.com/tomislav/'\
@@ -86,7 +84,6 @@ $br/git clone git@github.com:mk12/finance $gh/finance
 
 status 'Create PATH directories'
 mkdir -p $gh/go/bin
-mkdir -p $HOME/.cabal/bin
 
 status 'Symlinking dotfiles'
 $gh/dotfiles/link.sh
@@ -95,6 +92,7 @@ status 'Installing Tmux plugins'
 $br/git clone git@github.com:tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 status 'Installing Vim plugins'
+$br/vim +PlugInstall +qall
 $br/nvim +PlugInstall +qall
 
 status 'Symlinking ~/icloud and ~/ia'
