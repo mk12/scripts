@@ -95,9 +95,8 @@ status 'Installing Vim plugins'
 $br/vim +PlugInstall +qall
 $br/nvim +PlugInstall +qall
 
-status 'Symlinking ~/icloud and ~/ia'
-ln -s "$HOME/Library/Mobile Documents/com~apple~CloudDocs" $HOME/icloud
-ln -s "$HOME/Library/Mobile Documents/27N4MQEA55~pro~writer/Documents" $HOME/ia
+status 'Symlinking ~/ia'
+ln -s "$HOME/Dropbox/iA Writer" $HOME/ia
 
 status 'Changing login shell to fish'
 sudo chsh -s $br/fish $USER
