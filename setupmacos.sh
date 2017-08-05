@@ -98,6 +98,7 @@ $br/nvim +PlugInstall +qall
 
 status 'Symlinking ~/ia'
 ln -s "$HOME/Dropbox/iA Writer" $HOME/ia
+chflags -h hidden $HOME/ia
 
 status 'Changing login shell to fish'
 sudo chsh -s $br/fish $USER
