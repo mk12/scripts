@@ -15,16 +15,16 @@ def error(msg):
         file=sys.stderr)
 
 def check_amount(s, endcol):
-    if '$' in s:
-        i = s.index('$')
-        if not s[i+1] in DIGITS + '-':
+    if '  $' in s:
+        i = s.rindex('  $')
+        if not s[i+3] in DIGITS + '-':
             error("dollar sign not next to amount")
-        amt = s[s.index('$')+1:endcol]
-    elif 'USD' in s:
-        i = s.index('USD')
-        if s[i+3] != ' ':
-            errro("missing space after USD")
-        amt = s[s.index('USD')+4:endcol]
+        amt = s[i+3:endcol]
+    elif '  USD' in s:
+        i = s.rindex('  USD')
+        if s[i+5] != ' ':
+            error("missing space after USD")
+        amt = s[i+6:endcol]
     else:
         error("expected $ or USD")
         return
@@ -39,6 +39,7 @@ mode = 0
 note = ""
 payee = ""
 asserted = False
+prev_dates = None
 for line in fileinput.input():
     s = line.rstrip()
     if mode == 0:
@@ -53,18 +54,25 @@ for line in fileinput.input():
             try:
                 aux = datetime.strptime(aux_str, DATE_FMT)
             except ValueError:
-                full_str = "{}/{}".format(d.year, aux_str)
-                try:
-                    aux = datetime.strptime(full_str, DATE_FMT)
-                except ValueError:
-                    error("can't parse aux date '{}'".format(aux_str))
-                    continue
+                error("can't parse aux date '{}'".format(aux_str))
+                continue
             if aux == d:
                 error("aux date is redundant")
             if aux > d:
                 error("aux date is later, should be earlier")
+            dates = d, aux
+            if prev_dates and dates < prev_dates:
+                error("Date {}={} is earlier than previous date {}={}"
+                      .format(d, aux, prev_dates[0], prev_dates[1]))
+            prev_dates = dates
         elif len(s) > 13 and s[4] == '/' and s[7] == '/':
             xact = True
+            d = datetime.strptime(s[:10], DATE_FMT)
+            dates = d, d
+            if prev_dates and dates < prev_dates:
+                error("Date {}={} is earlier than previous date {}={}"
+                      .format(d, aux, prev_dates[0], prev_dates[1]))
+            prev_dates = dates
         if xact:
             mode = 2
             if '!' in s:
@@ -108,7 +116,7 @@ for line in fileinput.input():
             if not s[79] in DIGITS:
                 error("expected cent digit in balance assertion")
             check_amount(s[62:80], 80)
-        elif not asserted:
+        elif not asserted and not 'Assets:Cash' in s:
             if ('ATM' in payee or 'Transfer' in payee or 'Pay debt' in note or
                     'Collect debt' in note or 'Visa statement' in note or
                     'domain' in note or 'payroll' in note):
