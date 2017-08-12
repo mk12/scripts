@@ -15,12 +15,10 @@ status 'Installing Homebrew'
 	https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 status 'Installing Homebrew formulas'
-$br/brew cask install osxfuse
 $br/brew install fish
 $br/brew install mosh
 $br/brew install git
 $br/brew install go
-$br/brew install httpie
 $br/brew install ledger
 $br/brew install neovim/neovim/neovim
 $br/brew install node
@@ -28,13 +26,19 @@ $br/brew install python
 $br/brew install python3
 $br/brew install reattach-to-user-namespace
 $br/brew install ruby
-$br/brew install rust
 $br/brew install sshfs
 $br/brew install terminal-notifier
 $br/brew install the_silver_searcher
 $br/brew install tmux
 $br/brew install universal-ctags
 $br/brew install vim
+
+status 'Installing Homebrew cask formulas'
+$br/brew cask install iterm2
+$br/brew cask install spotify
+
+status 'Installing Rust'
+curl 'https://sh.rustup.rs' -sSf | sh
 
 status 'Installing Python packages'
 $br/pip install neovim
@@ -45,16 +49,6 @@ $br/gem install neovim pro
 
 status 'Installing Go packages'
 $br/go get golang.org/x/tools/cmd/goimports
-
-status 'Installing terminal profiles'
-curl 'https://raw.githubusercontent.com/tomislav/'\
-'osx-terminal.app-colors-solarized/master/Solarized%20Dark.terminal' \
-	> '/tmp/Solarized Dark.terminal'
-curl 'https://raw.githubusercontent.com/tomislav/'\
-'osx-terminal.app-colors-solarized/master/Solarized%20Light.terminal' \
-	> '/tmp/Solarized Light.terminal'
-open '/tmp/Solarized Dark.terminal'
-open '/tmp/Solarized Light.terminal'
 
 status 'Generating an SSH key'
 echo -n 'Enter email address to use with Git: '
@@ -107,6 +101,6 @@ status 'Finished'
 echo 'Manual steps:'
 echo '  1. Set up iCloud and adjust System Preferences.'
 echo '  2. Install apps from the Mac App Store.'
-echo '  3. Install fonts from ~/icloud/fonts.'
-echo '  4. Make Solarized Dark the default profile.'
+echo '  3. Install fonts from ~/Dropbox/fonts.'
+echo '  4. Configure iTerm2 profile settings.'
 echo '  5. Set HOMEBREW_GITHUB_API_TOKEN in ~/.config/fish/secret.fish.'
