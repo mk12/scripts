@@ -12,7 +12,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
 fi
 
 blog=$BLOG
-dest=~/Sites/mk/blog
+dest=~/Dropbox/Website/blog
 partial_dir=$blog/themes/equanimity/layouts/partials
 
 # Switch to the deployment head file.
@@ -38,7 +38,6 @@ mkdir "$trash"
 mv $dest/images/*.svg "$trash"
 mv $dest/fonts "$trash"
 mv $dest/js "$trash"
-mv $dest/404.html "$trash"
 find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
 
 # Publish to the server.
