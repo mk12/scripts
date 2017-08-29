@@ -34,8 +34,10 @@ $br/brew install universal-ctags
 $br/brew install vim
 
 status 'Installing Homebrew cask formulas'
+$br/brew cask install google-chrome
 $br/brew cask install iterm2
-$br/brew cask install spotify
+$br/brew cask install lastpass
+$br/brew cask install authy-desktop
 
 status 'Installing Rust'
 curl 'https://sh.rustup.rs' -sSf | sh
