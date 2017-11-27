@@ -16,12 +16,11 @@ status 'Installing Homebrew'
 
 status 'Installing Homebrew formulas'
 $br/brew install fish
-$br/brew install mosh
 $br/brew install git
 $br/brew install go
+$br/brew install keychain
 $br/brew install ledger
 $br/brew install neovim/neovim/neovim
-$br/brew install node
 $br/brew install python
 $br/brew install python3
 $br/brew install reattach-to-user-namespace
@@ -29,15 +28,17 @@ $br/brew install ruby
 $br/brew install sshfs
 $br/brew install terminal-notifier
 $br/brew install the_silver_searcher
+$br/brew install tldr
 $br/brew install tmux
 $br/brew install universal-ctags
 $br/brew install vim
 
 status 'Installing Homebrew cask formulas'
+$br/brew cask install authy-desktop
+$br/brew cask install emacs
 $br/brew cask install google-chrome
 $br/brew cask install iterm2
 $br/brew cask install lastpass
-$br/brew cask install authy-desktop
 
 status 'Installing Rust'
 curl 'https://sh.rustup.rs' -sSf | sh
@@ -78,9 +79,6 @@ status 'Cloning repositories'
 $br/git clone git@github.com:mk12/dotfiles $gh/dotfiles
 $br/git clone git@github.com:mk12/scripts $gh/scripts
 $br/git clone git@github.com:mk12/finance $gh/finance
-
-status 'Create PATH directories'
-mkdir -p $gh/go/bin
 
 status 'Symlinking dotfiles'
 $gh/dotfiles/link.sh
