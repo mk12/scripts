@@ -18,7 +18,7 @@ status 'Installing Homebrew formulas'
 $br/brew install fish
 $br/brew install git
 $br/brew install go
-$br/brew install ispell
+$br/brew install aspell
 $br/brew install keychain
 $br/brew install ledger
 $br/brew install neovim/neovim/neovim
