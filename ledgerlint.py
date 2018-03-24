@@ -2,10 +2,13 @@
 
 from datetime import datetime
 import fileinput
+import re
 import sys
 
 DIGITS = '0123456789'
 DATE_FMT = '%Y/%m/%d'
+
+DECIMAL = re.compile('[0-9]\.[0-9]')
 
 def error(msg):
     print("{}:{}: {}".format(
@@ -97,7 +100,9 @@ for line in fileinput.input():
             mode = 1
             asserted = False
             continue
-        if '.' in s[:60] or (len(s) >= 60 and s[59] in DIGITS):
+        if DECIMAL.match(s[:60]) or (len(s) >= 60 and s[59] in DIGITS):
+            if len(s) < 58:
+                error("misaligned #.# (assumed to be price)")
             if s[57] != '.':
                 error("value has misaligned '.'")
             if not s[58] in DIGITS:
@@ -107,6 +112,9 @@ for line in fileinput.input():
             check_amount(s[:60], 60)
         if '=' in s:
             asserted = True
+            if len(s) < 80:
+                error("balance assertion is not flush right")
+                continue
             if s[61] != '=':
                 error("balance assertion has misaligned '='")
             if s[77] != '.':
