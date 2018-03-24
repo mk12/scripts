@@ -15,30 +15,38 @@ status 'Installing Homebrew'
 	https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 status 'Installing Homebrew formulas'
-$br/brew install fish
+$br/brew install aspell
+$br/brew install bash
+$br/brew install bash-completion@2
 $br/brew install git
 $br/brew install go
-$br/brew install aspell
 $br/brew install keychain
 $br/brew install ledger
 $br/brew install neovim/neovim/neovim
 $br/brew install python
 $br/brew install python3
 $br/brew install reattach-to-user-namespace
+$br/brew install ripgrep
 $br/brew install ruby
 $br/brew install sshfs
 $br/brew install terminal-notifier
 $br/brew install the_silver_searcher
 $br/brew install tldr
 $br/brew install tmux
+$br/brew install trash
 $br/brew install universal-ctags
 $br/brew install vim
+$br/brew install zsh
+$br/brew install zsh-completion
+
+status 'Installing Emacs'
+$br/brew install d12frosted/emacs-plus/emacs-plus
+$br/brew linkapps emacs-plus
 
 status 'Installing Homebrew cask formulas'
 $br/brew cask install authy-desktop
 $br/brew cask install emacs
 $br/brew cask install google-chrome
-$br/brew cask install iterm2
 $br/brew cask install lastpass
 
 status 'Installing Rust'
@@ -46,7 +54,7 @@ curl 'https://sh.rustup.rs' -sSf | sh
 
 status 'Installing Python packages'
 $br/pip install neovim
-$br/pip3 install neovim pygments
+$br/pip3 install neovim pygments yapf
 
 status 'Installing Ruby gems'
 $br/gem install neovim pro
@@ -95,13 +103,13 @@ status 'Symlinking ~/ia'
 ln -s "$HOME/Dropbox/iA Writer" $HOME/ia
 chflags -h hidden $HOME/ia
 
-status 'Changing login shell to fish'
-sudo chsh -s $br/fish $USER
+status 'Changing login shell to zsh'
+sudo chsh -s $br/zsh $USER
 
 status 'Finished'
 echo 'Manual steps:'
 echo '  1. Set up iCloud and adjust System Preferences.'
 echo '  2. Install apps from the Mac App Store.'
 echo '  3. Install fonts from ~/Dropbox/fonts.'
-echo '  4. Configure iTerm2 profile settings.'
+echo '  4. Configure Terminal profile settings.'
 echo '  5. Set HOMEBREW_GITHUB_API_TOKEN in ~/.config/fish/secret.fish.'
