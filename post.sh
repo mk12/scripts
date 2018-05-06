@@ -4,7 +4,7 @@
 # With the "-p username", uses rsync to publish the blog.
 
 name=$(basename "$0")
-usage="usage: $name [-h] [-p | --publish]"
+usage="usage: $name [-h] [-p | --publish USERNAME]"
 
 if [[ $1 == "-h" || $1 == "--help" ]]; then
 	echo "$usage"
@@ -42,6 +42,10 @@ find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
 
 # Publish to the server.
 if [[ $1 == "-p" || $1 == "--publish" ]]; then
+	if [[ -z "$2" ]]; then
+		echo "Usage: post.sh -p USERNAME"
+		exit 1
+	fi
 	rsync -avz -e ssh --delete $dest/ \
 		$2@ssh.phx.nearlyfreespeech.net:/home/public/blog \
 		--exclude .DS_Store

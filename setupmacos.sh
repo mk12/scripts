@@ -15,39 +15,29 @@ status 'Installing Homebrew'
 	https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
 status 'Installing Homebrew formulas'
-$br/brew install aspell
 $br/brew install bash
 $br/brew install bash-completion@2
 $br/brew install git
 $br/brew install go
 $br/brew install keychain
 $br/brew install ledger
+$br/brew install neovim
 $br/brew install neovim/neovim/neovim
 $br/brew install python
-$br/brew install python3
 $br/brew install reattach-to-user-namespace
 $br/brew install ripgrep
 $br/brew install ruby
-$br/brew install sshfs
-$br/brew install terminal-notifier
-$br/brew install the_silver_searcher
 $br/brew install tldr
 $br/brew install tmux
 $br/brew install trash
-$br/brew install universal-ctags
-$br/brew install vim
 $br/brew install zsh
 $br/brew install zsh-completion
 
-status 'Installing Emacs'
-$br/brew install d12frosted/emacs-plus/emacs-plus
-$br/brew linkapps emacs-plus
-
 status 'Installing Homebrew cask formulas'
 $br/brew cask install authy-desktop
-$br/brew cask install emacs
 $br/brew cask install google-chrome
 $br/brew cask install lastpass
+$br/brew cask install visual-studio-code
 
 status 'Installing Rust'
 curl 'https://sh.rustup.rs' -sSf | sh
@@ -103,8 +93,8 @@ status 'Symlinking ~/ia'
 ln -s "$HOME/Dropbox/iA Writer" $HOME/ia
 chflags -h hidden $HOME/ia
 
-status 'Changing login shell to zsh'
-sudo chsh -s $br/zsh $USER
+status 'Changing login shell to fish'
+sudo chsh -s $br/fish $USER
 
 status 'Finished'
 echo 'Manual steps:'
