@@ -30,6 +30,7 @@ $br/brew install ruby
 $br/brew install tldr
 $br/brew install tmux
 $br/brew install trash
+$br/brew install vim
 $br/brew install zsh
 $br/brew install zsh-completion
 
