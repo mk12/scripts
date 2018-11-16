@@ -37,7 +37,7 @@ while getopts ':t:j:n:v:hfdl' opt; do
 	esac
 done
 
-if $force; then
+if [[ $force == true ]]; then
 	[[ -f $journal ]] || touch $journal
 	[[ -f $today ]] || touch $today
 else
