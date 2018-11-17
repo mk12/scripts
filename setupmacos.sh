@@ -14,7 +14,7 @@ brew_install() {
 }
 
 brew_cask_install() {
-	test -x "/Applications/$2.app" || brew install $1
+	test -x "/Applications/$2.app" || brew cask install $1
 }
 
 clone_git_repo() {
