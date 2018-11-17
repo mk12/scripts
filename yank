@@ -40,4 +40,4 @@ test -n "$TMUX" && tmux set-buffer "$buf"
 test -n "$DISPLAY" && printf %s "$buf" | { xsel -i -b || xclip -sel c ;} || :
 
 # also copy to macOS clipboard
-command -v pbcopy &> /dev/null && printf %s "$buf" | pbcopy || :
+test $(uname -s) = Darwin && printf %s "$buf" | pbcopy || :
