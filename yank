@@ -32,14 +32,15 @@ buf=$( cat "$@" )
 len=$( printf %s "$buf" | wc -c ) max=74994
 test $len -gt $max && echo "$0: input is $(( len - max )) bytes too long" >&2
 
-esc="\033]52;c;$( printf %s "ESC$buf" | head -c $max | base64 | tr -d '\r\n' )\a"
+esc="\033]52;c;$( printf %s "$buf" | head -c $max | base64 | tr -d '\r\n' )\a"
+# wrap it in an envelope in case tmux set-clipboard doesn't work
 test -n "${TMUX+x}" && esc="\033Ptmux;\033$esc\033\\"
 
 # send the escape code
 printf "$esc"
 
 # also copy to tmux clipboard
-test -n "${TMUX+x}" && tmux set-buffer "TMX$buf" || :
+test -n "${TMUX+x}" && tmux set-buffer "$buf" || :
 
 case $( uname -s ) in
   Linux)
@@ -50,6 +51,6 @@ case $( uname -s ) in
 
   Darwin)
     # also copy to macOS clipboard
-    printf %s "MAC$buf" | pbcopy || :
+    printf %s "$buf" | pbcopy || :
     ;;
 esac
