@@ -30,6 +30,7 @@ test -x $br/brew || /usr/bin/ruby -e "$(curl -fsSL \
 
 step 'Installing Homebrew formulas'
 brew_install bash
+brew_install exa
 brew_install fish
 brew_install git
 brew_install keychain
