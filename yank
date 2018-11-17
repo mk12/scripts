@@ -5,7 +5,8 @@
 # Copies the contents of the given files (or stdin if no files are given) to
 # the terminal that runs this program.  If this program is run inside tmux(1),
 # then it also copies the given contents into tmux's current clipboard buffer.
-# If this program is run inside X11, then it also copies to the X11 clipboard.
+# If this program is inside X11, then it also copies to the X11 clipboard. If
+# the operating system is macOS, it also copies via pbcopy.
 #
 # This is achieved by writing an OSC 52 escape sequence to the said terminal.
 # The maximum length of an OSC 52 escape sequence is 100_000 bytes, of which
@@ -23,21 +24,32 @@
 #
 # Written in 2014 by Suraj N. Kurapati <https://github.com/sunaku>
 # Also documented at https://sunaku.github.io/tmux-yank-osc52.html
+# Modified in 2018 by Mitchell Kember <https://github.com/mk12>
+
+set -euf
 
 buf=$( cat "$@" )
 len=$( printf %s "$buf" | wc -c ) max=74994
 test $len -gt $max && echo "$0: input is $(( len - max )) bytes too long" >&2
 
-esc="\033]52;c;$( printf %s "$buf" | head -c $max | base64 | tr -d '\r\n' )\a"
-test -n "$TMUX" && esc="\033Ptmux;\033$esc\033\\"
+esc="\033]52;c;$( printf %s "ESC$buf" | head -c $max | base64 | tr -d '\r\n' )\a"
+test -n "${TMUX+x}" && esc="\033Ptmux;\033$esc\033\\"
 
+# send the escape code
 printf "$esc"
 
 # also copy to tmux clipboard
-test -n "$TMUX" && tmux set-buffer "$buf"
+test -n "${TMUX+x}" && tmux set-buffer "TMX$buf" || :
 
-# also copy to X11 clipboard
-test -n "$DISPLAY" && printf %s "$buf" | { xsel -i -b || xclip -sel c ;} || :
+case $( uname -s ) in
+  Linux)
+    # also copy to X11 clipboard
+    test -n "${DISPLAY+x}" && \
+      printf %s "$buf" | { xsel -i -b || xclip -sel c ;} || :
+    ;;
 
-# also copy to macOS clipboard
-test $(uname -s) = Darwin && printf %s "$buf" | pbcopy || :
+  Darwin)
+    # also copy to macOS clipboard
+    printf %s "MAC$buf" | pbcopy || :
+    ;;
+esac
