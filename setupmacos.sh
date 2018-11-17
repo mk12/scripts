@@ -6,7 +6,7 @@ br=/usr/local/bin
 gh=~/GitHub
 
 step() {
-	echo -e "\x1b[31m[SETUP] $*...\x1b[0m"
+	echo -e "\x1b[31m[SETUP] $*\x1b[0m"
 }
 
 brew_install() {
@@ -32,6 +32,7 @@ step 'Installing Homebrew formulas'
 brew_install bash
 brew_install fish
 brew_install git
+brew_install keychain
 brew_install ledger
 brew_install neovim nvim
 brew_install python python3
@@ -45,6 +46,7 @@ brew_install vim
 step 'Installing Homebrew cask formulas'
 brew_cask_install dropbox 'Dropbox'
 brew_cask_install google-chrome 'Google Chrome'
+brew_cask_install iterm2 'iTerm'
 brew_cask_install lastpass 'LastPass'
 
 step 'Installing Rust'
@@ -61,9 +63,8 @@ if ! [[ -f ~/.ssh/id_rsa ]]; then
 	read email_address
 	ssh-keygen -t rsa -b 4096 -C "$email_address"
 
-	step 'Adding SSH key to ssh-agent'
-	eval "$(ssh-agent -s)"
-	ssh-add ~/.ssh/id_rsa
+	step 'Adding SSH key to keychain'
+	eval "$(keychain --eval --quiet --agents ssh id_rsa)"
 
 	step 'Adding SSH key to GitHub'
 	pbcopy < ~/.ssh/id_rsa.pub
@@ -73,6 +74,20 @@ if ! [[ -f ~/.ssh/id_rsa ]]; then
 	open 'https://github.com/settings/keys'
 	echo -n 'Press return when ready: '
 	read
+fi
+
+step 'Adding Homebrew GitHub API Token'
+secret=~/.config/fish/secret.fish
+if ! grep -q HOMEBREW_GITHUB_API_TOKEN $secret; then
+	echo 'Create an access token called HOMEBREW_GITHUB_API_TOKEN for [mac]'
+	echo -n 'Press return to open the browser to GitHub: '
+	read
+	open 'https://github.com/settings/tokens/new'
+	echo -n 'Press return once you have copied the token: '
+	read
+	echo -n 'set -x HOMEBREW_GITHUB_API_TOKEN "' >> $secret
+	pbpaste >> $secret
+	echo '"' >> $secret
 fi
 
 step 'Creating GitHub directory'
@@ -108,4 +123,3 @@ echo '  1. Set up iCloud.'
 echo '  2. Install apps from the App Store.'
 echo '  3. Install fonts from ~/Dropbox/fonts.'
 echo '  4. Configure terminal profile settings.'
-echo '  5. Set HOMEBREW_GITHUB_API_TOKEN in ~/.config/fish/secret.fish.'
