@@ -33,7 +33,6 @@ brew_install bash
 brew_install exa
 brew_install fish
 brew_install git
-brew_install keychain
 brew_install ledger
 brew_install neovim nvim
 brew_install python python3
@@ -65,7 +64,8 @@ if ! [[ -f ~/.ssh/id_rsa ]]; then
 	ssh-keygen -t rsa -b 4096 -C "$email_address"
 
 	step 'Adding SSH key to keychain'
-	eval "$(keychain --eval --quiet --agents ssh id_rsa)"
+	eval "$(ssh-agent -s)"
+	ssh-add -K ~/.ssh/id_rsa
 
 	step 'Adding SSH key to GitHub'
 	pbcopy < ~/.ssh/id_rsa.pub
