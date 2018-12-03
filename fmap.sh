@@ -12,30 +12,30 @@ name=$(basename "$0")
 usage="usage: $name [-h] program file ..."
 
 if (( $# == 0 )); then
-	echo "$usage" >&2
-	exit 1
+    echo "$usage" >&2
+    exit 1
 fi
 
 if [[ $1 == '-h' ]]; then
-	echo "$usage"
-	exit 0
+    echo "$usage"
+    exit 0
 fi
 
 if (( $# == 1 )); then
-	echo "$usage" >&2
-	exit 1
+    echo "$usage" >&2
+    exit 1
 fi
 
 prog=$1
 shift
 for file; do
-	filename=$(basename file)
-	temp=$(mktemp -t "$filename")
-	if $prog < "$file" > "$temp"; then
-		mv -f "$file" "$HOME/.vim/backup/$filename~"
-		mv -f "$temp" "$file"
-	else
-		echo "$name: $prog failed with exit status $?"
-	fi
-	rm "$temp" 2> /dev/null
+    filename=$(basename file)
+    temp=$(mktemp -t "$filename")
+    if $prog < "$file" > "$temp"; then
+        mv -f "$file" "$HOME/.vim/backup/$filename~"
+        mv -f "$temp" "$file"
+    else
+        echo "$name: $prog failed with exit status $?"
+    fi
+    rm "$temp" 2> /dev/null
 done

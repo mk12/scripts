@@ -18,13 +18,13 @@ use HTML::Entities qw(decode_entities);
 use LWP::Simple qw(get);
 
 sub show {
-	my ($s, $g) = @_;
-	$s =~ s/^\s+|\s+$//g;
-	print decode_entities($s);
-	if ($g) {
-		print ' (' . $g . ')';
-	}
-	print "\n";
+    my ($s, $g) = @_;
+    $s =~ s/^\s+|\s+$//g;
+    print decode_entities($s);
+    if ($g) {
+        print ' (' . $g . ')';
+    }
+    print "\n";
 }
 
 my $P = basename($0);
@@ -34,70 +34,70 @@ my $usage_src = '[--src wr | --src wiki]';
 my $usage = "usage: $P $usage_ft $usage_src [--browser] WORD\n";
 
 GetOptions(
-	'from|f=s' => \(my $from_lang = 'en'),
-	'to|t=s' => \(my $to_lang = 'fr'),
-	'reverse|r' => \(my $reverse),
-	'src|s=s' => \(my $source = 'wr'),
-	'browser|b' => \(my $browser)
+    'from|f=s' => \(my $from_lang = 'en'),
+    'to|t=s' => \(my $to_lang = 'fr'),
+    'reverse|r' => \(my $reverse),
+    'src|s=s' => \(my $source = 'wr'),
+    'browser|b' => \(my $browser)
 ) or die $usage;
 
 if ($reverse) {
-	($from_lang, $to_lang) = ($to_lang, $from_lang);
+    ($from_lang, $to_lang) = ($to_lang, $from_lang);
 }
 
 if (scalar(@ARGV) <= 0) {
-	die "$P: expecting word to translate\n";
+    die "$P: expecting word to translate\n";
 }
 
 if ($source eq 'wr') {
-	my $name = join('%20', @ARGV);
-	my $url = "http://wordreference.com/$from_lang$to_lang/$name";
-	if ($browser) {
-		open_browser($url);
-		exit 0;
-	}
+    my $name = join('%20', @ARGV);
+    my $url = "http://wordreference.com/$from_lang$to_lang/$name";
+    if ($browser) {
+        open_browser($url);
+        exit 0;
+    }
 
-	my $html = get($url);
-	my $no_entry = 'No translation found for';
-	if (not defined $html or index($html, $no_entry) != -1) {
-		die "$P: $name: no such entry\n";
-	}
+    my $html = get($url);
+    my $no_entry = 'No translation found for';
+    if (not defined $html or index($html, $no_entry) != -1) {
+        die "$P: $name: no such entry\n";
+    }
 
-	my $no_exact1 = "WordReference can't translate this exact phrase";
-	my $no_exact2 = "WordReference ne peut pas traduire cette expression";
-	if (index($html, $no_exact1) != -1 || index($html, $no_exact2) != -1) {
-		die "$P: $name: no exact entry\n";
-	}
+    my $no_exact1 = "WordReference can't translate this exact phrase";
+    my $no_exact2 = "WordReference ne peut pas traduire cette expression";
+    if (index($html, $no_exact1) != -1 || index($html, $no_exact2) != -1) {
+        die "$P: $name: no exact entry\n";
+    }
 
-	my $pattern = qr/< *td +class *= *["']ToWrd['"].*?>(.+?)<(?:.*?tooltip +POS2['"].*?>(.+?)<)?/;
-	if ($html =~ $pattern && substr($html, $+[0]) =~ $pattern) {
-		show $1, $2;
-	} else {
-		die "$P: $name: failed to parse page\n";
-	}
+    my $pattern = qr/< *td +class *= *["']ToWrd['"].*?>(.+?)<(?:.*?tooltip +POS2['"].*?>(.+?)<)?/;
+    if ($html =~ $pattern && substr($html, $+[0]) =~ $pattern) {
+        show $1, $2;
+    } else {
+        die "$P: $name: failed to parse page\n";
+    }
 } elsif ($source eq 'wiki') {
-	my $name = join('_', @ARGV);
-	my $url = "http://$from_lang.wikipedia.org/wiki/$name";
-	if ($browser) {
-		open_browser($url);
-		exit 0;
-	}
+    my $name = join('_', @ARGV);
+    my $url = "http://$from_lang.wikipedia.org/wiki/$name";
+    if ($browser) {
+        open_browser($url);
+        exit 0;
+    }
 
-	my $html = get($url);
-	if (not defined $html) {
-		die "$P: $name: no such article\n";
-	}
+    my $html = get($url);
+    if (not defined $html) {
+        die "$P: $name: no such article\n";
+    }
 
-	my $disambig = '/wiki/Help:Disambiguation';
-	if (index($html, $disambig) != -1) {
-		die "$P: $name: ambiguous\n";
-	}
+    my $disambig = '/wiki/Help:Disambiguation';
+    if (index($html, $disambig) != -1) {
+        die "$P: $name: ambiguous\n";
+    }
 
-	if ($html =~ /<a href="\/\/$to_lang\.wikipedia\.org\/wiki\/.*?" title="(.+?) –.+?"/) {
-		show $1;
-	} else {
-		die "$P: $name: no article for language '$to_lang'\n";
-	}
+    if ($html =~ /<a href="\/\/$to_lang\.wikipedia\.org\/wiki\/.*?" title="(.+?) –.+?"/) {
+        show $1;
+    } else {
+        die "$P: $name: no article for language '$to_lang'\n";
+    }
 } else {
-	die "$P: $source: invalid source (try 'wr' or 'wiki')\n";
+    die "$P: $source: invalid source (try 'wr' or 'wiki')\n";
 }

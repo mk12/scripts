@@ -13,37 +13,37 @@ offset=-5H
 language=false
 
 while getopts ':t:j:n:v:hfdl' opt; do
-	case $opt in
-		f) force=true;;
-		t) today=$OPTAG;;
-		j) journal=$OPTARG;;
-		v) offset=$OPTARG;;
-		d) offset='-1d';;
-		l) language=true;;
-		h)
-			echo "$usage"
-			exit 0
-			;;
-		:)
-			echo "$name: $OPTARG: missing argument" >&2
-			echo "$usage" >&2
-			exit 1
-			;;
-		\?)
-			echo "$name: $OPTARG: illegal option" >&2
-			echo "$usage" >&2
-			exit 1
-			;;
-	esac
+    case $opt in
+        f) force=true;;
+        t) today=$OPTAG;;
+        j) journal=$OPTARG;;
+        v) offset=$OPTARG;;
+        d) offset='-1d';;
+        l) language=true;;
+        h)
+            echo "$usage"
+            exit 0
+            ;;
+        :)
+            echo "$name: $OPTARG: missing argument" >&2
+            echo "$usage" >&2
+            exit 1
+            ;;
+        \?)
+            echo "$name: $OPTARG: illegal option" >&2
+            echo "$usage" >&2
+            exit 1
+            ;;
+    esac
 done
 
 if [[ $force == true ]]; then
-	[[ -f $journal ]] || touch $journal
-	[[ -f $today ]] || touch $today
+    [[ -f $journal ]] || touch $journal
+    [[ -f $today ]] || touch $today
 else
-	[[ -f $journal ]] || (echo "$name: $journal: no such file" >&2; exit 1)
-	[[ -f $today ]] || (echo "$name: $today: no such file" >&2; exit 1)
-	[[ -s $today ]] || (echo "$name: $today: file is empty" >&2; exit 1)
+    [[ -f $journal ]] || (echo "$name: $journal: no such file" >&2; exit 1)
+    [[ -f $today ]] || (echo "$name: $today: no such file" >&2; exit 1)
+    [[ -s $today ]] || (echo "$name: $today: file is empty" >&2; exit 1)
 fi
 
 opts="-v $offset"
@@ -58,11 +58,11 @@ entry+=$(< $today)
 entry+=$'\n'
 echo -n "$entry" >> $journal
 if $language; then
-	if [[ "02468" == *"${day: -1}"* ]]; then
-		echo -n "English" > $today
-	else
-		echo -n "Français" > $today
-	fi
+    if [[ "02468" == *"${day: -1}"* ]]; then
+        echo -n "English" > $today
+    else
+        echo -n "Français" > $today
+    fi
 else
-	> $today
+    > $today
 fi

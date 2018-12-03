@@ -3,7 +3,7 @@
 RTUN=reattach-to-user-namespace
 
 if [ -x /usr/local/bin/$RTUN ]; then
-	$RTUN $@
+    $RTUN $@
 else
-	exec "$@"
+    exec "$@"
 fi

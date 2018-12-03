@@ -7,8 +7,8 @@ name=$(basename "$0")
 usage="usage: $name [-h] [-p | --publish USERNAME]"
 
 if [[ $1 == "-h" || $1 == "--help" ]]; then
-	echo "$usage"
-	exit 0
+    echo "$usage"
+    exit 0
 fi
 
 blog=$BLOG
@@ -29,7 +29,7 @@ files="$(find "$dest/post" -type f -name "index.html")"
 
 # Inline all SVG content (so that they can use the web fonts).
 for f in $files; do
-	fmap.sh "inline_svg $dest/images" $f
+    fmap.sh "inline_svg $dest/images" $f
 done
 
 # The files here are not needed.
@@ -42,13 +42,13 @@ find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
 
 # Publish to the server.
 if [[ $1 == "-p" || $1 == "--publish" ]]; then
-	if [[ -z "$2" ]]; then
-		echo "Usage: post.sh -p USERNAME"
-		exit 1
-	fi
-	rsync -avz -e ssh --delete $dest/ \
-		$2@ssh.phx.nearlyfreespeech.net:/home/public/blog \
-		--exclude .DS_Store
+    if [[ -z "$2" ]]; then
+        echo "Usage: post.sh -p USERNAME"
+        exit 1
+    fi
+    rsync -avz -e ssh --delete $dest/ \
+        $2@ssh.phx.nearlyfreespeech.net:/home/public/blog \
+        --exclude .DS_Store
 fi
 
 # I usually publish a few days after creating the Markdown file.
