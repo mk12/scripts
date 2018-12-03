@@ -67,4 +67,4 @@ else
     > $today
 fi
 
-"$(dirname "$0")/journallint.sh" $journal
+"$(dirname "$0")/journallint.py" $journal
