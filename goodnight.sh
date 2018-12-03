@@ -66,3 +66,5 @@ if $language; then
 else
     > $today
 fi
+
+"$(dirname "$0")/journallint.sh" $journal
