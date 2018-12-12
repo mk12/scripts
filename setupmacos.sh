@@ -102,6 +102,11 @@ clone_git_repo mk12/scripts $gh/scripts
 step 'Symlinking dotfiles'
 $gh/dotfiles/link.sh
 
+step 'Linking iTerm2 preferences'
+defaults write com.googlecode.iterm2.plist PrefsCustomFolder \
+    -string $gh/dotfiles/iterm2
+defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder -bool true
+
 step 'Installing Tmux plugins'
 clone_git_repo tmux-plugins/tpm ~/.tmux/plugins/tpm
 
@@ -120,7 +125,6 @@ dscl . -read ~ UserShell | grep -q $br/fish || sudo chsh -s $br/fish $USER
 
 step 'Finished'
 echo 'Manual steps:'
-echo '  1. Set up iCloud.'
+echo '  1. Configure System Preferences.'
 echo '  2. Install apps from the App Store.'
 echo '  3. Install fonts from ~/Dropbox/fonts.'
-echo '  4. Configure terminal profile settings.'
