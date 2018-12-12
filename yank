@@ -40,7 +40,8 @@ test -n "${TMUX+x}" && esc="\033Ptmux;\033$esc\033\\"
 printf "$esc"
 
 # also copy to tmux clipboard
-test -n "${TMUX+x}" && tmux set-buffer "$buf" || :
+# pipe to load-buffer instead of using set-buffer because it has 2036 char limit
+test -n "${TMUX+x}" && printf %s "$buf" | tmux load-buffer - || :
 
 case $( uname -s ) in
   Linux)
