@@ -32,10 +32,9 @@ for file; do
     filename=$(basename file)
     temp=$(mktemp -t "$filename")
     if $prog < "$file" > "$temp"; then
-        mv -f "$file" "$HOME/.vim/backup/$filename~"
         mv -f "$temp" "$file"
     else
+        rm -f "$temp" 2>/dev/null
         echo "$name: $prog failed with exit status $?"
     fi
-    rm "$temp" 2> /dev/null
 done
