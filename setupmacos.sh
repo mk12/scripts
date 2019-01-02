@@ -8,16 +8,14 @@ gh=~/GitHub
 fish_secret=~/.config/fish/secret.fish
 
 # Options
-primary=
+primary=false
 
 usage() {
     cat <<EOS
-Setup macOS
-
 Usage: $(basename "$0") [options]
 
-This script configures a new Mac with all the settings and software I want. It's
-also idempotent, so running it twice is perfectly safe (and quick).
+This script configures a new Mac with all the settings and software I want. It
+can be run multiple times safely.
 
 Options:
 
@@ -181,7 +179,7 @@ main() {
 
     setup_fish_login
 
-    if [[ -n "$primary" ]]; then
+    if [[ "$primary" == true ]]; then
         setup_simplenote_backup
     fi
 
@@ -192,13 +190,14 @@ main() {
     echo "  3. Set up Time Machine backups."
 }
 
-while getopts ":hp" opt; do
+while getopts "hp" opt; do
     case $opt in
         h) usage; exit 0 ;;
-        p) primary=1 ;;
-        \?) echo "illegal option: $OPTARG" >&2; exit 1 ;;
-        :) echo "missing argument: $OPTARG" >&2; exit 1 ;;
+        p) primary=true ;;
+        *) exit 1 ;;
     esac
 done
+shift $((OPTIND - 1))
+[[ $# -eq 0 ]] ||
 
 main
