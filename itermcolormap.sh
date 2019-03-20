@@ -8,6 +8,7 @@ xdg_data_dir=${XDG_DATA_HOME:-$HOME/.local/share}/itermcolormap
 presets_file="$xdg_data_dir/presets.txt"
 
 update=false
+just_list=false
 map_alternates=false
 
 say() {
@@ -21,7 +22,7 @@ die() {
 
 usage() {
     cat <<EOF
-usage: $prog [-hua] [THEME ...]
+usage: $prog [-hula] [THEME ...]
 
 sets up color preset shortcuts for iTerm2
 
@@ -33,6 +34,7 @@ shortcuts Ctrl-Cmd-1, Ctrl-Cmd-2, etc. switch to those color presets.
 options:
     -h  show this help message
     -u  regenerate the list of color preset names
+    -l  list the available presets
     -a  map alternate (light/dark) presets to Ctrl-Alt-Cmd-(number)
 EOF
 }
@@ -123,6 +125,11 @@ main() {
         die "preset cache does not exist (try running $prog -u)"
     fi
 
+    if [[ "$just_list" == true ]]; then
+        cat "$presets_file"
+        return
+    fi
+
     if [[ $# -gt 0 ]]; then
         write_mappings "$@"
     else
@@ -134,10 +141,11 @@ main() {
     fi
 }
 
-while getopts "hua" opt; do
+while getopts "hula" opt; do
     case $opt in
         h) usage; exit 0 ;;
         u) update=true ;;
+        l) just_list=true ;;
         a) map_alternates=true ;;
         *) exit 1 ;;
     esac
