@@ -198,6 +198,6 @@ while getopts "hp" opt; do
     esac
 done
 shift $((OPTIND - 1))
-[[ $# -eq 0 ]] ||
+[[ $# -eq 0 ]] || die "too many arguments"
 
 main

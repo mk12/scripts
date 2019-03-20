@@ -50,7 +50,6 @@ do_backup() {
     [[ -d "$backup_dest" ]] || die "$backup_dest does not exist"
     temp=$(mktemp -d)
     make TOKEN="$SIMPLENOTE_API_TOKEN" BACKUP_DIR="$temp/"
-    echo "skippin rsync"
     rsync -ac --delete "$temp/" "$backup_dest"
     rm -rf "$temp"
 }
