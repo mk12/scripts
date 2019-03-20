@@ -96,6 +96,9 @@ write_mappings() {
     for name in "$@"; do
         write_one_mapping "$ctrl_cmd" "$n" "$name"
         ((n++))
+        if [[ "$n" -eq 40 ]]; then
+            n=30
+        fi
     done
 
     if [[ "$map_alternates" == true ]]; then
@@ -123,6 +126,9 @@ write_mappings() {
             done
             write_one_mapping "$ctrl_alt_cmd" "$n" "$alternate"
             ((n++))
+            if [[ "$n" -eq 40 ]]; then
+                n=30
+            fi
         done
     fi
 }
