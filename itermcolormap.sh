@@ -292,10 +292,11 @@ main() {
         return
     fi
 
-    load_fav_presets
     if [[ "$opt_dump" == true ]]; then
+        load_fav_presets
         write_mappings
     elif [[ "$opt_patch" == true ]]; then
+        load_fav_presets
         modify_plist
     else
         if [[ "$#" -eq 1 ]]; then
