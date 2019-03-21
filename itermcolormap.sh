@@ -11,8 +11,9 @@ my_presets_file="$xdg_config_dir/default.txt"
 
 bin_plist="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
 plist="$PROJECTS/dotfiles/iterm2/com.googlecode.iterm2.plist"
-start_marker="START_ITERMCOLORMAP"
-end_marker="END_ITERMCOLORMAP"
+keymap="GlobalKeyMap"
+
+indent=
 
 update=false
 just_list=false
@@ -78,13 +79,13 @@ EOF
 
 write_one_mapping() {
     cat <<EOF
-<key>0x$2-0x$1</key>
-<dict>
-    <key>Action</key>
-    <integer>40</integer>
-    <key>Text</key>
-    <string>$3</string>
-</dict>
+$indent<key>0x$2-0x$1</key>
+$indent<dict>
+$indent    <key>Action</key>
+$indent    <integer>40</integer>
+$indent    <key>Text</key>
+$indent    <string>$3</string>
+$indent</dict>
 EOF
 }
 
@@ -155,16 +156,49 @@ main() {
     fi
 
     if [[ "$in_place" == true ]]; then
-        if ! grep -q "$start_marker" "$plist"; then
-            die "$plist: does not contain '$start_marker'"
-        fi
-        if ! grep -q "$end_marker" "$plist"; then
-            die "$plist: does not contain '$end_marker'"
+        indent=$'\t\t'
+        if ! grep -q "<key>$keymap</key>" "$plist"; then
+            die "$plist: does not contain $keymap"
         fi
         out=$(mktemp)
-        sed -n -e "1,/$start_marker/p" < "$plist" > "$out"
+        sed -ne "1,/<key>$keymap<\\/key>/p" < "$plist" > "$out"
+        printf "\t%s\n" "<dict>" >> "$out"
         write_mappings "${presets[@]+"${presets[@]}"}" >> "$out"
-        sed -n -e "/$end_marker/,\$p" < "$plist" >> "$out"
+        buf=
+        mode=0
+        linecount=0
+        while IFS="" read -r line || [[ -n "$line" ]]; do
+            ((++linecount))
+            if [[ "$linecount" -le 2 ]]; then
+                continue
+            fi
+            buf+="$line"
+            buf+=$'\n'
+            advance=false
+            case $mode in
+                0) [[ "$line" == *"<key>0x3"* ]] && advance=true ;;
+                1) [[ "$line" == *"<dict>"* ]] && advance=true ;;
+                2) [[ "$line" == *"<key>Action"* ]] && advance=true ;;
+                3) [[ "$line" == *"<integer>40"* ]] && advance=true ;;
+                4) [[ "$line" == *"<key>Text"* ]] && advance=true ;;
+                5) [[ "$line" == *"<string>"* ]] && advance=true ;;
+                6) [[ "$line" == *"</dict>"* ]] && advance=true ;;
+            esac
+            if [[ "$advance" == true ]]; then
+                ((mode++))
+                if [[ "$mode" -eq 7 ]]; then
+                    buf=
+                    mode=0
+                fi
+            else
+                printf "%s" "$buf" >> "$out"
+                buf=
+                mode=0
+            fi
+        done < <(sed -ne \
+            "/<key>$keymap<\\/key>/,/^"$'\t'"<\\/dict>/p" < "$plist")
+        sed -e "1,/<key>$keymap<\\/key>/d" < "$plist" \
+            | sed -e "1,/^"$'\t'"<\\/dict>/d" >> "$out"
         mv -f "$out" "$plist"
         say "successfully edited $plist"
     else
