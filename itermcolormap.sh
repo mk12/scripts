@@ -5,7 +5,8 @@ set -eufo pipefail
 prog=$(basename "$0")
 
 xdg_data_dir=${XDG_DATA_HOME:-$HOME/.local/share}/itermcolormap
-all_presets_file="$xdg_data_dir/presets.txt"
+all_presets_file="$xdg_data_dir/presets.csv"
+current_preset_file="$xdg_data_dir/current"
 xdg_config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/itermcolormap
 fav_presets_file="$xdg_config_dir/fav.txt"
 fav_presets=()
@@ -80,6 +81,7 @@ fn_keys_osa=(
 indent=
 
 # Command-line options.
+opt_alternate=false
 opt_dump=false
 opt_list=false
 opt_list_fav=false
@@ -97,11 +99,12 @@ die() {
 
 usage() {
     cat <<EOF
-usage: $prog [-dfhlpu] [THEME]
+usage: $prog [-adfhlpu] [THEME]
 
 sets up color preset shortcuts for iTerm2
 
 options:
+    -a  switch to alternate (dark/light) preset
     -d  dump the XML prefs
     -f  list your favorite presets
     -h  show this help message
@@ -171,8 +174,8 @@ load_fav_presets() {
 get_alternate() {
     for preset in "$1-light" "$1-dark" "$1-night" \
             "${1%-light}" "${1%-dark}" "${1%-night}" \
-            "${1/dark/light}" "${1%-dark}light" \
-            "${1%dark}-light" "${1/dark/light}" \
+            "${1/dark/light}" "${1/light/dark}" \
+            "${1%-dark}light" "${1%dark}-light" \
             "${1%-light}dark" "${1%light}-dark"; do
         if [[ "$1" != "$preset" ]] && \
                 grep -q "^$preset," "$all_presets_file"; then
@@ -272,6 +275,7 @@ set_preset() {
     osascript <<EOF
 tell application "System Events" to key code $keycode using {$mods}
 EOF
+    echo "$1" > "$current_preset_file"
     say "set color preset to $1"
 }
 
@@ -298,17 +302,32 @@ main() {
     elif [[ "$opt_patch" == true ]]; then
         load_fav_presets
         modify_plist
+    elif [[ "$opt_alternate" == true ]]; then
+        if ! [[ -s "$current_preset_file" ]]; then
+            die "current preset unknown"
+        fi
+        preset=$(< "$current_preset_file")
+        alt=$(get_alternate "$preset")
+        if [[ -z "$alt" ]]; then
+            die "$preset: no alternate"
+        fi
+        set_preset "$alt"
     else
         if [[ "$#" -eq 1 ]]; then
-            set_preset "$1"
+            preset=$1
         else
-            set_preset "$(cut -d, -f1 "$all_presets_file" | fzf)"
+            preset=$(cut -d, -f1 "$all_presets_file" | fzf)
+            if [[ -z "$preset" ]]; then
+                exit 1
+            fi
         fi
+        set_preset "$preset"
     fi
 }
 
-while getopts "dfhlpu" opt; do
+while getopts "adfhlpu" opt; do
     case $opt in
+        a) opt_alternate=true ;;
         d) opt_dump=true ;;
         f) opt_list_fav=true ;;
         h) usage; exit 0 ;;
