@@ -193,38 +193,68 @@ set_preset() {
 
 interactive_mode() {
     cat <<EOF
-n  next
-p  previous
+j  next
+k  previous
 a  alternate (light/dark)
-f  select with fzf
+f  fzf preset(s)
+r  reset filter
 q  quit
 
 EOF
+
     preset=$(< "$current_preset_file")
     if [[ -z "$preset" ]]; then
         preset=$(head -n1 "$all_presets_file")
     fi
+    has_filter=false
+    filtered=$(mktemp)
+    cp "$all_presets_file" "$filtered"
     echo "preset:"
+
     while true; do
         read -rn 1 char
         printf "\r\x1b[2K"
         new=
         case $char in
-            n)
-                new=$(sed -ne "/^$preset\$/,\$p" < "$all_presets_file" \
+            j)
+                new=$(sed -ne "/^$preset\$/,\$p" < "$filtered" \
                     | sed '2q;d')
                 if [[ -z "$new" ]]; then
-                    new=$(head -n1 "$all_presets_file")
+                    new=$(head -n1 "$filtered")
                 fi
                 ;;
-            p)
-                new=$(sed "/^$preset\$/,\$d" < "$all_presets_file" | tail -n1)
+            k)
+                new=$(sed "/^$preset\$/,\$d" < "$filtered" | tail -n1)
                 if [[ -z "$new" ]]; then
-                    new=$(tail -n1 "$all_presets_file")
+                    new=$(tail -n1 "$filtered")
                 fi
                 ;;
-            a) new=$(get_alternate "$preset") ;;
-            f) new=$(fzf < "$all_presets_file") ;;
+            a)
+                new=$(get_alternate "$preset")
+                cp "$all_presets_file" "$filtered"
+                has_filter=false
+                ;;
+            f)
+                nothing=false
+                fzf -m --bind=tab:toggle-all < "$all_presets_file" \
+                    > "$filtered" || nothing=true
+                lines=$(wc -l "$filtered" | awk '{print $1}')
+                if [[ "$nothing" == true || "$lines" -eq 0 ]]; then
+                    cp "$all_presets_file" "$filtered"
+                    has_filter=false
+                elif [[ "$lines" -eq 1 ]]; then
+                    new=$(< "$filtered")
+                    cp "$all_presets_file" "$filtered"
+                    has_filter=false
+                else
+                    new=$(head -n1 "$filtered")
+                    has_filter=true
+                fi
+                ;;
+            r)
+                cp "$all_presets_file" "$filtered"
+                has_filter=false
+                ;;
             q) break ;;
             *) ;;
         esac
@@ -232,8 +262,14 @@ EOF
             preset=$new
             set_preset "$preset"
         fi
-        printf "\x1b[1A\r\x1b[2Kpreset: %s\n" "$preset"
+        if [[ "$has_filter" == true ]]; then
+            filter_msg="[filtered] "
+        else
+            filter_msg=
+        fi
+        printf "\x1b[1A\r\x1b[2K%spreset: %s\n" "$filter_msg" "$preset"
     done
+    rm "$filtered"
 }
 
 main() {
