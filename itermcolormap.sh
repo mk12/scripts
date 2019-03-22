@@ -5,7 +5,7 @@ set -eufo pipefail
 prog=$(basename "$0")
 
 xdg_data_dir=${XDG_DATA_HOME:-$HOME/.local/share}/itermcolormap
-all_presets_file="$xdg_data_dir/presets.csv"
+all_presets_file="$xdg_data_dir/presets"
 current_preset_file="$xdg_data_dir/current"
 xdg_config_dir=${XDG_CONFIG_HOME:-$HOME/.config}/itermcolormap
 fav_presets_file="$xdg_config_dir/fav.txt"
@@ -15,67 +15,8 @@ bin_plist="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
 plist="$PROJECTS/dotfiles/iterm2/com.googlecode.iterm2.plist"
 keymap="GlobalKeyMap"
 
+# Ctrl+Cmd
 fav_modifier="140000"
-modifiers=(
-"100000" # cmd
-"120000" # shift_cmd
-"140000" # ctrl_cmd
-"160000" # ctrl_shift_cmd
-"180000" # alt_cmd
-"1a0000" # alt_shift_cmd
-"1c0000" # ctrl_alt_cmd
-"60000"  # ctrl_shift
-"a0000"  # alt_shift
-"c0000"  # ctrl_alt
-"e0000"  # ctrl_alt_shift
-"20000"  # shift
-)
-
-modifiers_osa=(
-"command;"                # cmd
-"shift:command;"          # shift_cmd
-"control:command;"        # ctrl_cmd
-"control:shift:command;"  # ctrl_shift_cmd
-"option:command;"         # alt_cmd
-"option:shift:command;"   # alt_shift_cmd
-"control:option:command;" # ctrl_alt_cmd
-"control:shift;"          # ctrl_shift
-"option:shift;"           # alt_shift
-"control:option;"         # ctrl_alt
-"control:option:shift;"   # ctrl_alt_shift
-"shift;"                  # shift
-)
-
-fn_keys=(
-"f704" # F1
-"f705" # F2 
-"f706" # F3
-"f707" # F4
-"f708" # F5
-"f709" # F6
-"f70a" # F7
-"f70b" # F8
-"f70c" # F9
-"f70d" # F10
-"f70e" # F11
-"f70f" # F12
-)
-
-# Applescript key codes make no sense.
-fn_keys_osa=(
-"122" # F1
-"120" # F2 
-"99" # F3
-"118" # F4
-"96" # F5
-"97" # F6
-"98" # F7
-"100" # F8
-"101" # F9
-"109" # F10
-"103" # F11
-"111" # F12
-)
 
 # Used for indenting the XML.
 indent=
@@ -83,6 +24,7 @@ indent=
 # Command-line options.
 opt_alternate=false
 opt_dump=false
+opt_interactive=false
 opt_list=false
 opt_list_fav=false
 opt_patch=false
@@ -99,7 +41,7 @@ die() {
 
 usage() {
     cat <<EOF
-usage: $prog [-adfhlpu] [THEME]
+usage: $prog [-adfhilnpu] [THEME]
 
 sets up color preset shortcuts for iTerm2
 
@@ -108,6 +50,7 @@ options:
     -d  dump the XML prefs
     -f  list your favorite presets
     -h  show this help message
+    -i  interactive mode
     -l  list the available presets
     -p  patch prefs in the dotfiles repo
     -u  regenerate the list of color presets
@@ -116,8 +59,7 @@ EOF
 
 create_preset_cache() {
     mkdir -p "$xdg_data_dir"
-    tmp=$(mktemp)
-    if ! osascript <<EOF | sed '/^$/d' | sort > "$tmp"
+    if ! osascript <<EOF | sed '/^$/d' | sort > "$all_presets_file"
 set iTermPList to "$bin_plist"
 tell application "System Events"
     tell property list file iTermPList
@@ -136,25 +78,6 @@ EOF
     then
         die "failed to update presets"
     fi
-
-    m=0
-    f=0
-    > "$all_presets_file"
-    while read -r name; do
-        printf "%s,%s,%s,%s,%s\n" \
-            "$name" "${modifiers[$m]}" "${fn_keys[$f]}" \
-            "${modifiers_osa[$m]}" "${fn_keys_osa[$f]}" \
-            >> "$all_presets_file"
-        ((f++))
-        if [[ "$f" -ge "${#fn_keys[@]}" ]]; then
-            f=0
-            ((m++))
-            if [[ "$m" -ge "${#modifiers[@]}" ]]; then
-                die "not enough key combinations"
-            fi
-        fi
-    done < "$tmp"
-    rm "$tmp"
     say "successfully updated presets"
 }
 
@@ -178,7 +101,7 @@ get_alternate() {
             "${1%-dark}light" "${1%dark}-light" \
             "${1%-light}dark" "${1%light}-dark"; do
         if [[ "$1" != "$preset" ]] && \
-                grep -q "^$preset," "$all_presets_file"; then
+                grep -q "^$preset$" "$all_presets_file"; then
             echo "$preset"
             return
         fi
@@ -206,13 +129,6 @@ write_mappings() {
             n=30
         fi
     done
-
-    while IFS=',' read -ra fields; do
-        name=${fields[0]}
-        mod=${fields[1]}
-        fn_key=${fields[2]}
-        write_one_mapping "$mod" "$fn_key" "$name"
-    done < "$all_presets_file"
 }
 
 modify_plist() {
@@ -264,19 +180,60 @@ modify_plist() {
 }
 
 set_preset() {
-    IFS=',' read -ra fields < <(grep "^$1," "$all_presets_file") \
-        || die "$1: unknown color preset"
-    if [[ ${#fields[@]} -lt 1 || -z ${fields[0]} ]]; then
+    if ! grep -q "^$1$" "$all_presets_file"; then
         die "$1: unknown color preset"
     fi
-    mods=${fields[3]}
-    keycode=${fields[4]}
-    mods=$(sed 's/:/ down, /g;s/;/ down/' <<< "$mods")
-    osascript <<EOF
-tell application "System Events" to key code $keycode using {$mods}
-EOF
+    esc="\x1b]1337;SetColors=preset=$1\x07"
+    if [[ -n "${TMUX+x}" ]]; then
+        esc="\x1bPtmux;\x1b$esc\x1b\\"
+    fi
+    printf "$esc"
     echo "$1" > "$current_preset_file"
-    say "set color preset to $1"
+}
+
+interactive_mode() {
+    cat <<EOF
+n  next
+p  previous
+a  alternate (light/dark)
+f  select with fzf
+q  quit
+
+EOF
+    preset=$(< "$current_preset_file")
+    if [[ -z "$preset" ]]; then
+        preset=$(head -n1 "$all_presets_file")
+    fi
+    echo "preset:"
+    while true; do
+        read -rn 1 char
+        printf "\r\x1b[2K"
+        new=
+        case $char in
+            n)
+                new=$(sed -ne "/^$preset\$/,\$p" < "$all_presets_file" \
+                    | sed '2q;d')
+                if [[ -z "$new" ]]; then
+                    new=$(head -n1 "$all_presets_file")
+                fi
+                ;;
+            p)
+                new=$(sed "/^$preset\$/,\$d" < "$all_presets_file" | tail -n1)
+                if [[ -z "$new" ]]; then
+                    new=$(tail -n1 "$all_presets_file")
+                fi
+                ;;
+            a) new=$(get_alternate "$preset") ;;
+            f) new=$(fzf < "$all_presets_file") ;;
+            q) break ;;
+            *) ;;
+        esac
+        if [[ -n "$new" && "$new" != "$preset" ]]; then
+            preset=$new
+            set_preset "$preset"
+        fi
+        printf "\x1b[1A\r\x1b[2Kpreset: %s\n" "$preset"
+    done
 }
 
 main() {
@@ -288,7 +245,7 @@ main() {
         die "preset cache does not exist (try running $prog -u)"
     fi
     if [[ "$opt_list" == true ]]; then
-        cut -d, -f1 "$all_presets_file"
+        cat "$all_presets_file"
         return
     fi
     if [[ "$opt_list_fav" == true ]]; then
@@ -312,11 +269,13 @@ main() {
             die "$preset: no alternate"
         fi
         set_preset "$alt"
+    elif [[ "$opt_interactive" == true ]]; then
+        interactive_mode
     else
         if [[ "$#" -eq 1 ]]; then
             preset=$1
         else
-            preset=$(cut -d, -f1 "$all_presets_file" | fzf)
+            preset=$(fzf < "$all_presets_file")
             if [[ -z "$preset" ]]; then
                 exit 1
             fi
@@ -325,12 +284,13 @@ main() {
     fi
 }
 
-while getopts "adfhlpu" opt; do
+while getopts "adfhilpu" opt; do
     case $opt in
         a) opt_alternate=true ;;
         d) opt_dump=true ;;
         f) opt_list_fav=true ;;
         h) usage; exit 0 ;;
+        i) opt_interactive=true ;;
         l) opt_list=true ;;
         p) opt_patch=true ;;
         u) opt_update=true ;;
