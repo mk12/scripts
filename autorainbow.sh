@@ -7,6 +7,8 @@ die() {
     exit 1
 }
 
+echo "$(date): running autorainbow"
+
 # https://apple.stackexchange.com/a/103346
 val=$(ioreg -n IODisplayWrangler \
     | grep -i IOPowerManagement \
@@ -21,4 +23,6 @@ if [[ -z "$session" ]]; then
 fi
 
 tmux split-window -t "$session" rainbowterm set -as \; resize-pane -y 2
-echo "changed color preset on $session"
+sleep 10 # wait for animation
+preset=$(rainbowterm list -c)
+echo "$(date): tmux session $session: changed preset to $preset"
