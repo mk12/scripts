@@ -22,7 +22,10 @@ if [[ -z "$session" ]]; then
     die "no tmux session"
 fi
 
-tmux split-window -t "$session" rainbowterm set -as \; resize-pane -y 2
-sleep 10 # wait for animation
-preset=$(rainbowterm list -c)
+pane_id=$(tmux split-window -P -F "#{pane_id}" \
+    -d -t "$session" rainbowterm set -as)
+tmux resize-pane -t "$pane_id" -y 2
+# Wait for it to write to smart_history.
+sleep 2
+preset=$(tail -n1 ~/.local/share/rainbowterm/smart_history)
 echo "$(date): tmux session $session: changed preset to $preset"
