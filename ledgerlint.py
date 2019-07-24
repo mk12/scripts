@@ -28,8 +28,13 @@ def check_amount(s, endcol):
         if s[i+5] != ' ':
             error("missing space after USD")
         amt = s[i+6:endcol]
+    elif '  EUR' in s:
+        i = s.rindex('  EUR')
+        if s[i+5] != ' ':
+            error("missing space after EUR")
+        amt = s[i+6:endcol]
     else:
-        error("expected $ or USD")
+        error("expected $ or USD or EUR")
         return
     whole = amt[:-3]
     if whole[0] == '-':
