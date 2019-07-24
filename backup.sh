@@ -2,6 +2,8 @@
 
 set -eufo pipefail
 
+source ~/.shellrc
+
 prog=$(basename "$0")
 plist="com.mitchellkember.backup.plist"
 dest_plist="$HOME/Library/LaunchAgents/$plist"
@@ -25,8 +27,8 @@ usage: $prog [-hi]
 backup up Simplenote to Dropbox using hiroshi/simplenote-backup
 
 options:
-  -h  show this help message
-  -i  install a launchd agent for this script
+    -h  show this help message
+    -i  install a launchd agent for this script
 EOS
 }
 
@@ -43,6 +45,7 @@ do_install() {
 }
 
 do_backup() {
+    say "Date: $(date)"
     say "Backing up Simplenote in Dropbox"
     cd "$PROJECTS" || die "\$PROJECTS not set"
     cd simplenote-backup || die "simplenote-backup is not installed"

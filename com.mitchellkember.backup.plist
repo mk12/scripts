@@ -10,16 +10,14 @@
 
         <key>ProgramArguments</key>
         <array>
-            <string>/usr/local/bin/fish</string>
-            <string>-c</string>
-            <string>backup.sh</string>
+            <string>/Users/mitchell/GitHub/scripts/backup.sh</string>
         </array>
 
         <key>StandardErrorPath</key>
-        <string>/dev/null</string>
+        <string>/tmp/com.mitchellkember.backup.log</string>
 
         <key>StandardOutPath</key>
-        <string>/dev/null</string>
+        <string>/tmp/com.mitchellkember.backup.log</string>
 
         <!-- Run once a day. -->
         <key>StartCalendarInterval</key>
