@@ -52,19 +52,19 @@ fi
 
 case $# in
     1)
-        check_on $1
+        check_on "$1"
         ;;
     2)
         [[ $2 != 'on' ]] || error "invalid use of 'on'"
-        check_be $1
+        check_be "$1"
         begin=$2
         ;;
     3)
         if [[ $2 == 'on' ]]; then
-            check_on $1
+            check_on "$1"
             end=$3
         else
-            check_be $1
+            check_be "$1"
             begin=$2
             end=$3
         fi
