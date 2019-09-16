@@ -15,6 +15,7 @@ usage="usage: $name COMMAND [on DATE | BEGIN [END]]
   n    Net income            X
   p    Payees            X   X
   s    Summary           X
+  v    Investments       X   X
 "
 
 if (( $# < 1 || $# > 3 )); then
@@ -29,9 +30,9 @@ fi
 
 # 'ON' commands report based on a moment in time.
 # 'BE' commands report based on a Begin/End time interval.
-all_cmds='abceinps'
-on_cmds='abps'
-be_cmds='aceinp'
+all_cmds='abceinpsv'
+on_cmds='abpsv'
+be_cmds='aceinpv'
 
 error() {
     echo "$name: $1" >&2
@@ -72,11 +73,11 @@ case $# in
 esac
 
 invoke() {
-    if [[ $begin != "" && $end != "" ]]; then
+    if [[ -n $begin && -n $end ]]; then
         ledger -b "$begin" -e "$end" "$@"
-    elif [[ $begin != "" ]]; then
+    elif [[ -n $begin ]]; then
         ledger -b "$begin" "$@"
-    elif [[ $end != "" ]]; then
+    elif [[ -n $end ]]; then
         ledger -e "$end" "$@"
     else
         ledger "$@"
@@ -96,7 +97,7 @@ summary() {
 
     echo "NET WORTH"
     echo "========================================"
-    invoke -nE bal '^Assets' '^Liabilities' || exit 1
+    invoke -nE bal '^Assets' '^Liabilities' -X USD || exit 1
     echo
     echo "YTD NET INCOME"
     echo "========================================"
@@ -112,6 +113,26 @@ summary() {
     echo
 }
 
+investments() {
+    if [[ -z "$begin" ]]; then
+        echo "INVESTMENTS"
+        echo "========================================"
+        invoke bal '^Assets:Vanguard' -X USD || exit 1
+    else
+        echo "REALIZED GAINS"
+        echo "========================================"
+        invoke bal '^Income:Capital Gains' -X USD || exit 1
+        echo
+        echo "REALIZED LOSSES"
+        echo "========================================"
+        invoke bal '^Expenses:Capital Losses' -X USD || exit 1
+    fi
+    echo
+    echo "UNREALIZED GAINS/LOSSES"
+    echo "========================================"
+    invoke bal '^Assets:Vanguard' -G -X USD || exit 1
+}
+
 case ${1:0:1} in
     a) invoke -E accounts ;;
     b) invoke bal '^Assets' '^Liabilities' ;;
@@ -121,5 +142,6 @@ case ${1:0:1} in
     n) invoke --invert --depth 2 bal '^Income' '^Expenses' ;;
     p) invoke payees ;;
     s) summary ;;
+    v) investments ;;
     ?) error ;;
 esac
