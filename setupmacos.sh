@@ -2,13 +2,39 @@
 
 set -ufo pipefail
 
-# Constants
+# Options
+mode=setup
+primary=false
+
 br=/usr/local/bin
 gh=~/GitHub
-fish_secret=~/.config/fish/secret.fish
+secrets=~/.shellrc.local
 
-# Options
-primary=false
+homebrew_formulas=(
+    "exa"
+    "fd"
+    "fish"
+    "git"
+    "htop"
+    "ledger"
+    "neovim"
+    "oath-toolkit"
+    "python"
+    "python@2"
+    "ripgrep"
+    "shellcheck"
+    "tldr"
+    "tmux"
+    "trash"
+    "vim"
+)
+
+homebrew_casks=(
+    "ballast"
+    "dropbox"
+    "iterm2"
+    "visual-studio-code"
+)
 
 usage() {
     cat <<EOS
@@ -20,6 +46,8 @@ can be run multiple times safely.
 Options:
 
     -h  Print this help message
+    -b  Print comparision of currently installed homebrew formulas to the ones
+        that this script would install.
     -p  Setup as the primary Mac. This includes some additional configuration
         that should only be present on one machine at a time.
 EOS
@@ -76,15 +104,15 @@ setup_my_repos() {
 
 setup_homebrew_github_api_token() {
     step "Setting Homebrew GitHub API Token"
-    if ! grep -q HOMEBREW_GITHUB_API_TOKEN "$fish_secret"; then
+    if ! grep -q HOMEBREW_GITHUB_API_TOKEN "$secrets"; then
         echo "Create an access token called HOMEBREW_GITHUB_API_TOKEN for X"
         echo -n "Press return to open the browser to GitHub: "
         read -r
         open "https://github.com/settings/tokens/new"
         echo -n "Press return once you have copied the token: "
         read -r
-        { echo -n 'set -x HOMEBREW_GITHUB_API_TOKEN "'; pbpaste; echo '"'; } \
-            >> "$fish_secret"
+        { echo -n 'export HOMEBREW_GITHUB_API_TOKEN="'; pbpaste; echo '"'; } \
+            >> "$secrets"
     fi
 }
 
@@ -93,7 +121,7 @@ setup_simplenote_backup() {
     clone_git_repo hiroshi/simplenote-backup "$gh/simplenote-backup"
 
     step "Setting Simplenote API Token"
-    if ! grep -q SIMPLENOTE_API_TOKEN "$fish_secret"; then
+    if ! grep -q SIMPLENOTE_API_TOKEN "$secrets"; then
         property="simperium_opts.token"
         echo -n $property | pbcopy
         echo "The string '$property' has been copied to the clipboard"
@@ -103,8 +131,8 @@ setup_simplenote_backup() {
         open "https://app.simplenote.com/"
         echo -n "Press return once you have copied the token: "
         read -r
-        { echo -n "set -x SIMPLENOTE_API_TOKEN ""; pbpaste; echo """; } \
-            >> "$fish_secret"
+        { echo -n 'export SIMPLENOTE_API_TOKEN="'; pbpaste; echo '"'; } \
+            >> "$secrets"
     fi
 
     "$gh/scripts/backup.sh" install
@@ -116,7 +144,14 @@ setup_homebrew() {
         https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
     step "Installing Homebrew formulas"
-    "$br/brew" bundle install --global --no-upgrade --verbose
+    for f in "${homebrew_formulas[@]}"; do
+        "$br/brew" install "$f"
+    done
+
+    step "Installing Homebrew casks"
+    for c in "${homebrew_casks[@]}"; do
+        "$br/brew" cask install "$c"
+    done
 }
 
 setup_rust() {
@@ -163,7 +198,7 @@ setup_fish_login() {
         || sudo chsh -s "$br/fish" "$USER"
 }
 
-main() {
+setup_everything() {
     setup_xcode_cli
     setup_ssh_github
     setup_my_repos
@@ -190,9 +225,40 @@ main() {
     echo "  3. Set up Time Machine backups."
 }
 
-while getopts "hp" opt; do
+print_homebrew_info() {
+    dir=$(mktemp -d)
+    printf "%s\n" "${homebrew_formulas[@]}" | sort > "$dir/golden"
+    printf "%s\n" "${homebrew_casks[@]}" | sort > "$dir/golden_cask"
+    "$br/brew" list | sort > "$dir/list"
+    "$br/brew" cask list | sort > "$dir/list_cask"
+    "$br/brew" leaves | sort > "$dir/leaves"
+
+    echo "Uninstalled"
+    echo "==========="
+    comm -23 "$dir/golden" "$dir/list"
+    comm -23 "$dir/golden_cask" "$dir/list_cask" | sed 's/^/cask: /'
+    echo
+
+    echo "Extraneous"
+    echo "=========="
+    comm -13 "$dir/golden" "$dir/leaves"
+    comm -13 "$dir/golden_cask" "$dir/list_cask" | sed 's/^/cask: /'
+
+    rm -f "$dir"/{golden{,_cask},list{,_cask},leaves}
+    rmdir "$dir"
+}
+
+main() {
+    case $mode in
+        setup) setup_everything ;;
+        brew) print_homebrew_info ;;
+    esac
+}
+
+while getopts "hbp" opt; do
     case $opt in
         h) usage; exit 0 ;;
+        b) mode=brew ;;
         p) primary=true ;;
         *) exit 1 ;;
     esac

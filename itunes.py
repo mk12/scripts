@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""This script prints top-played songs from iTunes for each year."""
+
 from collections import defaultdict
 from dateutil.parser import parse
 from pathlib import Path
