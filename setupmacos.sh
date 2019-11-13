@@ -10,18 +10,20 @@ br=/usr/local/bin
 gh=~/GitHub
 secrets=~/.shellrc.local
 
+script_dir=$(cd "$(dirname "$0")" && pwd)
+
 homebrew_formulas=(
     "exa"
     "fd"
     "fish"
     "git"
     "htop"
+    "jq"
     "ledger"
-    "neovim"
-    "oath-toolkit"
-    "python"
-    "python@2"
-    "ripgrep"
+    "neovim:nvim"
+    "oath-toolkit:oathtool"
+    "python:python3"
+    "ripgrep:rg"
     "shellcheck"
     "tldr"
     "tmux"
@@ -31,9 +33,9 @@ homebrew_formulas=(
 
 homebrew_casks=(
     "ballast"
-    "dropbox"
-    "iterm2"
-    "visual-studio-code"
+    "dropbox:Dropbox"
+    "iterm2:iTerm"
+    "visual-studio-code:Visual Studio Code"
 )
 
 usage() {
@@ -58,7 +60,7 @@ step() {
 }
 
 clone_git_repo() {
-    test -d "$2"|| "$br/git" clone "git@github.com:$1" "$2"
+    [[ -d "$2" ]] || "$br/git" clone "git@github.com:$1" "$2"
 }
 
 setup_xcode_cli() {
@@ -135,34 +137,37 @@ setup_simplenote_backup() {
             >> "$secrets"
     fi
 
-    "$gh/scripts/backup.sh" install
+    "$gh/scripts/backup.sh" -i
 }
 
 setup_homebrew() {
     step "Installing Homebrew"
-    test -x "$br/brew" || /usr/bin/ruby -e "$(curl -fsSL \
+    [[ -x "$br/brew" ]] || /usr/bin/ruby -e "$(curl -fsSL \
         https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
     step "Installing Homebrew formulas"
-    for f in "${homebrew_formulas[@]}"; do
-        "$br/brew" install "$f"
+    for entry in "${homebrew_formulas[@]}"; do
+        formula=${entry%:*}
+        binary=${entry#*:}
+        [[ -x "$br/$binary" ]] || "$br/brew" install "$formula"
     done
 
     step "Installing Homebrew casks"
-    for c in "${homebrew_casks[@]}"; do
-        "$br/brew" cask install "$c"
+    for entry in "${homebrew_casks[@]}"; do
+        cask=${entry%:*}
+        app=${entry#*:}
+        [[ -d "/Applications/$app.app" ]] || "$br/brew" cask install "$cask"
     done
 }
 
 setup_rust() {
     step "Installing Rust"
-    test -x ~/.cargo/bin/rustup || curl "https://sh.rustup.rs" -sSf | sh
+    [[ -x ~/.cargo/bin/rustup ]] || curl "https://sh.rustup.rs" -sSf | sh
 }
 
 setup_python() {
     step "Installing Python packages"
-    "$br/pip" install neovim
-    "$br/pip3" install neovim pygments
+    "$br/pip3" install pynvim pygments
 }
 
 setup_iterm2() {
@@ -171,6 +176,13 @@ setup_iterm2() {
         -string "$gh/dotfiles/iterm2"
     defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder \
         -bool true
+
+    step "Copying iTerm2 dynamic profiles"
+    profile_dir="$HOME/Library/Application Support/iTerm2/DynamicProfiles"
+    mkdir -p "$profile_dir"
+    if ! [[ -f "$profile_dir/profiles.json" ]]; then
+        cp "$script_dir/profiles.json" "$profile_dir"
+    fi
 }
 
 setup_tmux() {
@@ -227,8 +239,8 @@ setup_everything() {
 
 print_homebrew_info() {
     dir=$(mktemp -d)
-    printf "%s\n" "${homebrew_formulas[@]}" | sort > "$dir/golden"
-    printf "%s\n" "${homebrew_casks[@]}" | sort > "$dir/golden_cask"
+    printf "%s\n" "${homebrew_formulas[@]%:*}" | sort > "$dir/golden"
+    printf "%s\n" "${homebrew_casks[@]%:*}" | sort > "$dir/golden_cask"
     "$br/brew" list | sort > "$dir/list"
     "$br/brew" cask list | sort > "$dir/list_cask"
     "$br/brew" leaves | sort > "$dir/leaves"
