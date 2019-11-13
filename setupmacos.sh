@@ -6,13 +6,14 @@ set -ufo pipefail
 mode=setup
 primary=false
 
-br=/usr/local/bin
+br=$(brew --prefix)/bin
 gh=~/GitHub
 secrets=~/.shellrc.local
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 homebrew_formulas=(
+    "bat"
     "exa"
     "fd"
     "fish"
