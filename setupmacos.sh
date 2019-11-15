@@ -177,13 +177,6 @@ setup_iterm2() {
         -string "$gh/dotfiles/iterm2"
     defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder \
         -bool true
-
-    step "Copying iTerm2 dynamic profiles"
-    profile_dir="$HOME/Library/Application Support/iTerm2/DynamicProfiles"
-    mkdir -p "$profile_dir"
-    if ! [[ -f "$profile_dir/profiles.json" ]]; then
-        cp "$script_dir/profiles.json" "$profile_dir"
-    fi
 }
 
 setup_tmux() {
