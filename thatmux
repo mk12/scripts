@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# This scripts lets you choose a tmux session to connect to using fzf. It works
+# for both local and remote sessions. It reads from the $session file, which
+# should have each line formatted as user@host:session or host:session.
+
+set -efo pipefail
+
+program_name=$(basename "$0")
+sessions=~/.config/thatmux/sessions
+
+tmux_args=("-CC")
+
+usage() {
+    echo "usage: $program_name [-n]"
+}
+
+die() {
+    echo "$program_name: $*" >&2
+    exit 1
+}
+
+main() {
+    [[ -f "$sessions" ]] || die "$sessions: file not found"
+
+    choice=$(fzf --reverse < "$sessions") || die "no selection made"
+    ssh_dest=${choice%:*}
+    host=${ssh_dest#*@}
+    session=${choice#*:}
+
+    ping -c 1 -W 1 "$host" &> /dev/null || die "$host: cannot reach host"
+
+    case $ssh_dest in
+        localhost)
+            tmux "${tmux_args[@]}" new -A -s "$session"
+            ;;
+        *)
+            ssh -t "$ssh_dest" "tmux ${tmux_args[*]} new -A -s '$session'"
+            ;;
+    esac
+}
+
+while getopts "hn" opt; do
+    case $opt in
+        h) usage; exit 0 ;;
+        n) tmux_args=() ;;
+        *) exit 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+[[ $# -eq 0 ]] || die "too many arguments"
+
+main
