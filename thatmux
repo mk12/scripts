@@ -2,17 +2,19 @@
 
 # This scripts lets you choose a tmux session to connect to using fzf. It works
 # for both local and remote sessions. It reads from the $session file, which
-# should have each line formatted as user@host:session or host:session.
+# should have each line formatted as user@host:session or host:session. The
+# session will be created if it doesn't already exist.
 
 set -efo pipefail
 
 program_name=$(basename "$0")
 sessions=~/.config/thatmux/sessions
 
+# Default to using control mode.
 tmux_args=("-CC")
 
 usage() {
-    echo "usage: $program_name [-n]"
+    echo "usage: $program_name [-t]"
 }
 
 die() {
@@ -28,22 +30,21 @@ main() {
     host=${ssh_dest#*@}
     session=${choice#*:}
 
-    ping -c 1 -W 1 "$host" &> /dev/null || die "$host: cannot reach host"
-
     case $ssh_dest in
         localhost)
             tmux "${tmux_args[@]}" new -A -s "$session"
             ;;
         *)
+            ping -c1 -W1 "$host" &> /dev/null || die "$host: cannot reach host"
             ssh -t "$ssh_dest" "tmux ${tmux_args[*]} new -A -s '$session'"
             ;;
     esac
 }
 
-while getopts "hn" opt; do
+while getopts "ht" opt; do
     case $opt in
         h) usage; exit 0 ;;
-        n) tmux_args=() ;;
+        t) tmux_args=() ;;
         *) exit 1 ;;
     esac
 done
