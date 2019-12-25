@@ -7,7 +7,7 @@ mode=setup
 primary=false
 
 br=$(brew --prefix)/bin
-gh=~/GitHub
+pr=~/Projects
 secrets=~/.shellrc.local
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
@@ -28,6 +28,7 @@ homebrew_formulas=(
     "shellcheck"
     "tldr"
     "tmux"
+    "topgrade"
     "trash"
     "vim"
 )
@@ -35,7 +36,8 @@ homebrew_formulas=(
 homebrew_casks=(
     "ballast"
     "dropbox:Dropbox"
-    "iterm2:iTerm"
+    "hammerspoon:Hammerspoon"
+    "kitty"
     "visual-studio-code:Visual Studio Code"
 )
 
@@ -93,16 +95,16 @@ setup_ssh_github() {
 }
 
 setup_my_repos() {
-    step "Creating GitHub directory"
-    mkdir -p "$gh"
+    step "Creating $pj directory"
+    mkdir -p "$pj"
 
     step "Cloning repositories"
-    clone_git_repo mk12/dotfiles "$gh/dotfiles"
-    clone_git_repo mk12/finance "$gh/finance"
-    clone_git_repo mk12/scripts "$gh/scripts"
+    clone_git_repo mk12/dotfiles "$pj/dotfiles"
+    clone_git_repo mk12/finance "$pj/finance"
+    clone_git_repo mk12/scripts "$pj/scripts"
 
     step "Symlinking dotfiles"
-    "$gh/dotfiles/link.sh"
+    "$pj/dotfiles/link.sh"
 }
 
 setup_homebrew_github_api_token() {
@@ -120,14 +122,14 @@ setup_homebrew_github_api_token() {
 }
 
 setup_simplenote_backup() {
-    clone_git_repo Simperium/simperium-python "$gh/simperium-python"
-    clone_git_repo hiroshi/simplenote-backup "$gh/simplenote-backup"
+    clone_git_repo Simperium/simperium-python "$pj/simperium-python"
+    clone_git_repo hiroshi/simplenote-backup "$pj/simplenote-backup"
 
     step "Setting Simplenote API Token"
     if ! grep -q SIMPLENOTE_API_TOKEN "$secrets"; then
         property="simperium_opts.token"
-        echo -n $property | pbcopy
-        echo "The string '$property' has been copied to the clipboard"
+        echo -n $pjoperty | pbcopy
+        echo "The string '$pjoperty' has been copied to the clipboard"
         echo "Paste it into the web console in Simplenote and copy the result"
         echo -n "Press return to open the browser to Simplenote: "
         read -r
@@ -138,7 +140,7 @@ setup_simplenote_backup() {
             >> "$secrets"
     fi
 
-    "$gh/scripts/backup.sh" -i
+    "$pj/scripts/backup.sh" -i
 }
 
 setup_homebrew() {
@@ -171,13 +173,30 @@ setup_python() {
     "$br/pip3" install pynvim pygments
 }
 
-setup_iterm2() {
-    step "Linking iTerm2 preferences"
-    defaults write com.googlecode.iterm2.plist PrefsCustomFolder \
-        -string "$gh/dotfiles/iterm2"
-    defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder \
-        -bool true
+setup_kitty() {
+    step "sth"
+    # TODO
 }
+
+setup_hammerspoon() {
+    step "Installing SpoonInstall"
+    url="https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SpoonInstall.spoon.zip"
+    if ! [[ -d ~/.hammerspoon/Spoons/SpoonInstall.spoon ]]; then
+        dest=$(mktemp)
+        curl -fsSL "$url" > "$dest"
+        unzip "$dest" -d ~/.hammerspoon/Spoons
+        rm -f "$dest"
+    fi
+}
+
+# TODO: Remove.
+# setup_iterm2() {
+#     step "Linking iTerm2 preferences"
+#     defaults write com.googlecode.iterm2.plist PrefsCustomFolder \
+#         -string "$pj/dotfiles/iterm2"
+#     defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder \
+#         -bool true
+# }
 
 setup_tmux() {
     step "Installing Tmux plugins"
@@ -220,7 +239,7 @@ setup_everything() {
 
     setup_fish_login
 
-    if [[ "$primary" == true ]]; then
+    if [[ "$pjimary" == true ]]; then
         setup_simplenote_backup
     fi
 
