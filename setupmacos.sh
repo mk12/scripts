@@ -7,7 +7,7 @@ mode=setup
 primary=false
 
 br=$(brew --prefix)/bin
-pr=~/Projects
+pj=~/Projects
 secrets=~/.shellrc.local
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
@@ -173,9 +173,22 @@ setup_python() {
     "$br/pip3" install pynvim pygments
 }
 
+setup_tmux() {
+    step "Installing Tmux plugins"
+    clone_git_repo tmux-plugins/tpm ~/.tmux/plugins/tpm
+}
+
+setup_vim() {
+    step "Installing Vim plugins"
+    "$br/vim" +PlugInstall +qall
+    "$br/nvim" +PlugInstall +qall
+}
+
 setup_kitty() {
-    step "sth"
-    # TODO
+    step "Setting up kitty"
+    clone_git_repo kdrag0n/base16-kitty "$pj/base16-kitty"
+    echo "include ~/Projects/base16-kitty/colors/base16-onedark.conf" \
+        > ~/.config/kitty/colors.conf
 }
 
 setup_hammerspoon() {
@@ -187,26 +200,6 @@ setup_hammerspoon() {
         unzip "$dest" -d ~/.hammerspoon/Spoons
         rm -f "$dest"
     fi
-}
-
-# TODO: Remove.
-# setup_iterm2() {
-#     step "Linking iTerm2 preferences"
-#     defaults write com.googlecode.iterm2.plist PrefsCustomFolder \
-#         -string "$pj/dotfiles/iterm2"
-#     defaults write com.googlecode.iterm2.plist LoadPrefsFromCustomFolder \
-#         -bool true
-# }
-
-setup_tmux() {
-    step "Installing Tmux plugins"
-    clone_git_repo tmux-plugins/tpm ~/.tmux/plugins/tpm
-}
-
-setup_vim() {
-    step "Installing Vim plugins"
-    "$br/vim" +PlugInstall +qall
-    "$br/nvim" +PlugInstall +qall
 }
 
 setup_ia_symlink() {
@@ -230,16 +223,17 @@ setup_everything() {
     setup_homebrew_github_api_token
     setup_homebrew
 
-    setup_ia_symlink
-    setup_iterm2
     setup_python
     setup_rust
     setup_tmux
     setup_vim
+    setup_kitty
+    setup_hammerspoon
 
+    setup_ia_symlink
     setup_fish_login
 
-    if [[ "$pjimary" == true ]]; then
+    if [[ "$primary" == true ]]; then
         setup_simplenote_backup
     fi
 
