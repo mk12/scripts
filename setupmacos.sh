@@ -103,6 +103,9 @@ setup_my_repos() {
     clone_git_repo mk12/finance "$pj/finance"
     clone_git_repo mk12/scripts "$pj/scripts"
 
+    step "Building scripts"
+    make -C "$pj/scripts"
+
     step "Symlinking dotfiles"
     "$pj/dotfiles/link.sh"
 }
@@ -187,7 +190,7 @@ setup_vim() {
 setup_kitty() {
     step "Setting up kitty"
     clone_git_repo kdrag0n/base16-kitty "$pj/base16-kitty"
-    echo "include ~/Projects/base16-kitty/colors/base16-onedark.conf" \
+    echo "include $HOME/Projects/base16-kitty/colors/base16-onedark.conf" \
         > ~/.config/kitty/colors.conf
 }
 
