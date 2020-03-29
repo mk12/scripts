@@ -4,10 +4,16 @@ set -eufo pipefail
 
 usage() {
     cat <<EOS
-usage: $0 [-h] YEAR
+usage: $0 [-h] YEAR USDCAD
 
 This script calculates maximum account balances for foreign (outside U.S.)
 accounts during a year, for FBAR filing.
+
+YEAR is a 4-digit year, like 2019.
+USDCAD is the exchange rate X such that CAD = USD * X
+
+Look up exchange rates here:
+https://fiscal.treasury.gov/reports-statements/treasury-reporting-rates-exchange/historical.html
 EOS
 }
 
@@ -19,16 +25,12 @@ readonly accounts=(
 
 main() {
     year=$1
+    exchange=$2
     next=$(( year + 1 ))
     ymd="$year-01-01"
-    url="https://www.bankofcanada.ca/valet/observations/group/FX_RATES_ANNUAL/json?start_date=$ymd"
-    echo "Fetching the average USDCAD rate for $year:"
-    echo "$url"
-    exchange=$(curl -s "$url" | jq -r ".observations | .[] | select(.d == \"$ymd\") | .FXAUSDCAD.v")
     echo "Using USDCAD: $exchange"
     echo
-    cad=0
-    usd=0
+    combined=0
     for acct in "${accounts[@]}"; do
         format='{"date":"%(format_date(date))","total":"%(scrub(display_total))"}\n'
         jqexpr="
@@ -45,20 +47,17 @@ map(
         date=$(jq -r '.date' <<< "$res")
         total=$(jq -r '.total' <<< "$res")
         value=$(jq -r '.value' <<< "$res")
-        printf "%-20s %15s %15s on %s\n" "$acct" "$total" "($value)" "$date"
         if [[ "$total" == 'USD'* ]]; then
-            usd=$(bc <<< "scale=2; $usd + $value")
+            usd=$value
         else
-            cad=$(bc <<< "scale=2; $cad + $value")
+            usd=$(bc <<< "scale=2; $value / $exchange")
         fi
+        printf "%-20s %15s %10s %15s on %s\n" \
+            "$acct" "$total" "($value)" "[USD $usd]" "$date"
+        combined=$(bc <<< "scale=2; $combined + $usd")
     done
-    cad_in_usd=$(bc <<< "scale=2; $cad / $exchange")
-    combined=$(bc <<< "scale=2; $usd + $cad_in_usd")
-    echo
-    printf "Total  %15s = %s\n" "CAD $cad" "USD $cad_in_usd"
-    printf "Total  %15s   %s\n" "" "USD $usd"
     echo "------------------------------------------------------------"
-    printf "       %15s   %s\n" "" "USD $combined"
+    printf "Aggregate: %15s\n" "USD $combined"
 }
 
 while getopts "h" opt; do
@@ -68,7 +67,7 @@ while getopts "h" opt; do
 done
 shift $((OPTIND - 1))
 
-if [[ $# -ne 1 ]]; then
+if [[ $# -ne 2 ]]; then
     usage
     exit 1
 fi

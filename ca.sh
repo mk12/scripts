@@ -121,7 +121,7 @@ investments() {
     else
         echo "REALIZED GAINS"
         echo "========================================"
-        invoke bal '^Income:Capital Gains' -X USD || exit 1
+        invoke bal '^Income:Capital Gains' -X USD --invert || exit 1
         echo
         echo "REALIZED LOSSES"
         echo "========================================"
@@ -131,6 +131,13 @@ investments() {
     echo "UNREALIZED GAINS/LOSSES"
     echo "========================================"
     invoke bal '^Assets:Vanguard' -G -X USD || exit 1
+    if [[ -n "$begin" ]]; then
+        echo
+        echo "DIVIDENDS"
+        echo "========================================"
+        invoke bal '^Income:Dividends' -X USD --invert || exit 1
+        echo
+    fi
 }
 
 case ${1:0:1} in
