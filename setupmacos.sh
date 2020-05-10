@@ -13,6 +13,7 @@ secrets=~/.shellrc.local
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 homebrew_formulas=(
+    "awk"
     "bat"
     "exa"
     "fd"
