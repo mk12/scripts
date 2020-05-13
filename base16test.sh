@@ -39,11 +39,11 @@ gap() {
     printf "    "
 }
 
-show "0" "background"   0 10 15; gap; show "3" "comment"      8 0 0 ; echo
-show "8" "red"          1 0 0  ; gap; show "9" "constant"     9 0 0 ; echo
-show "b" "green"        2 0 0  ; gap; show "1" "light bg"    10 0 15; echo
-show "a" "class"        3 0 0  ; gap; show "2" "selection"   11 0 0 ; echo
-show "d" "function"     4 0 0  ; gap; show "4" "dark fg"     12 0 0 ; echo
-show "e" "keyword"      5 0 0  ; gap; show "6" "rare fg"     13 0 0 ; echo
-show "c" "escape"       6 0 0  ; gap; show "f" "deprecated"  14 0 0 ; echo
-show "5" "rare bg"      7 0 0  ; gap; show "5" "foreground"  15 0 0 ; echo
+show "0" "background"   0 10 7; gap; show "3" "comment"      8 0 0; echo
+show "8" "red"          1 0 0 ; gap; show "9" "constant"     9 0 0; echo
+show "b" "green"        2 0 0 ; gap; show "1" "highlight"   10 0 7; echo
+show "a" "class"        3 0 0 ; gap; show "2" "selection"   11 0 7; echo
+show "d" "function"     4 0 0 ; gap; show "4" "subtle fg"   12 0 0; echo
+show "e" "keyword"      5 0 0 ; gap; show "7" "inverse bg"  13 0 0; echo
+show "c" "special"      6 0 0 ; gap; show "f" "deprecated"  14 0 0; echo
+show "5" "foreground"   7 0 0 ; gap; show "6" "emphasis"    15 0 0; echo

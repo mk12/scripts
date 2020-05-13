@@ -190,7 +190,11 @@ setup_vim() {
 
 setup_kitty() {
     step "Setting up kitty"
-    clone_git_repo kdrag0n/base16-kitty "$pj/base16-kitty"
+    clone_git_repo mk12/base16-kitty "$pj/base16-kitty"
+    clone_git_repo mk12/base16-solarized-scheme "$pj/base16-solarized-scheme"
+    "$pj/base16-kitty/register.sh" "$pj/base16-solarized-theme"
+    "$pj/base16-kitty/update.sh"
+    "$pj/base16-kitty/build.sh"
     echo "include $HOME/Projects/base16-kitty/colors/base16-onedark.conf" \
         > ~/.config/kitty/colors.conf
 }
