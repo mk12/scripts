@@ -104,19 +104,21 @@ Split split(std::string_view s, std::string_view delim) {
 //       Journal structure
 // =============================================================================
 
-#define NUM_PARTS 4
+#define NUM_PARTS 5
 enum Part {
     Commodities,
+    Tags,
     Accounts,
     People,
     Transactions,
 };
 
-#define NUM_COMMODITY_PARTS 3
+#define NUM_COMMODITY_PARTS 4
 enum CommodityPart {
     Currencies,
     MutualFunds,
     Stocks,
+    Other,
 };
 
 #define NUM_ACCOUNT_PARTS 6
@@ -137,6 +139,7 @@ enum PeoplePart {
 
 const char* const PART_COMMENTS[NUM_PARTS] = {
     [Commodities]  = ";;; Commodities",
+    [Tags]         = ";;; Tags",
     [Accounts]     = ";;; Accounts",
     [People]       = ";;; People",
     [Transactions] = ";;; Transactions",
@@ -146,6 +149,7 @@ const char* const COMMODITY_PART_COMMENTS[NUM_COMMODITY_PARTS] = {
     [Currencies]  = "; Currencies",
     [MutualFunds] = "; Mutual funds",
     [Stocks]      = "; Stocks",
+    [Other]       = "; Other",
 };
 
 const char* const ACCOUNT_PART_COMMENTS[NUM_ACCOUNT_PARTS] = {
@@ -169,6 +173,7 @@ void skip(Input& input, const char* const stop) {
 }
 
 void lint_commodities(Input&, const char*);
+void lint_tags(Input&, const char*);
 void lint_accounts(Input&, const char*);
 void lint_people(Input&, const char*);
 void lint_transactions(Input&, const char*);
@@ -185,6 +190,7 @@ void lint_people_creditors(Input&, const char*);
 
 const LintFn PART_FUNCTIONS[NUM_PARTS] = {
     [Commodities]  = lint_commodities,
+    [Tags]         = lint_tags,
     [Accounts]     = lint_accounts,
     [People]       = lint_people,
     [Transactions] = lint_transactions,
@@ -194,6 +200,7 @@ const LintFn COMMODITY_PART_FUNCTIONS[NUM_COMMODITY_PARTS] = {
     [Currencies]  = skip,
     [MutualFunds] = skip,
     [Stocks]      = skip,
+    [Other]       = skip,
 };
 
 const LintFn ACCOUNT_PART_FUNCTIONS[NUM_ACCOUNT_PARTS] = {
@@ -284,6 +291,20 @@ void lint_commodities(Input& input, const char* const stop) {
         COMMODITY_PART_COMMENTS, COMMODITY_PART_FUNCTIONS, NUM_COMMODITY_PARTS);
 }
 
+void lint_tags(Input& input, const char* const stop) {
+    std::string last;
+    while (input.getline_until(stop)) {
+        if (starts_with(input.view(), "tag ")) {
+            const auto tag = input.view().substr(std::strlen("tag "));
+            if (!last.empty() && !(last < tag)) {
+                input.error("tag out of order: %.*s",
+                    static_cast<int>(tag.size()), tag.data());
+            }
+            last = tag;
+        }
+    }
+}
+
 void lint_accounts(Input& input, const char* const stop) {
     check_sections(input, stop,
         ACCOUNT_PART_COMMENTS, ACCOUNT_PART_FUNCTIONS, NUM_ACCOUNT_PARTS);
@@ -344,7 +365,17 @@ struct State {
     bool pending = false;
     bool last_dates = false;
     std::string payee, note, last_pri, last_aux;
+    unsigned num_postings = 0;
+    unsigned num_amountless_postings = 0;
     unsigned div_columns[NUM_DIVISIONS] = {};
+
+    void new_transaction() {
+        num_postings = 0;
+        num_amountless_postings = 0;
+        for (unsigned i = 0; i < NUM_DIVISIONS; ++i) {
+            div_columns[i] = 0;
+        }
+    }
 };
 
 void check_transaction_entry(Input&, State&);
@@ -367,10 +398,8 @@ void lint_transactions(Input& input, const char* const stop) {
         switch (expect) {
         case ENTRY:
             expect = NOTE;
+            state.new_transaction();
             check_transaction_entry(input, state);
-            for (unsigned i = 0; i < NUM_DIVISIONS; ++i) {
-                state.div_columns[i] = 0;
-            }
             break;
         case NOTE:
             expect = POSTINGS;
@@ -449,6 +478,13 @@ void check_transaction_posting(Input& input, State& state) {
     const auto view = input.view();
     const auto size = view.size();
     const auto s = split(view.substr(4), "  ");
+    ++state.num_postings;
+    if (!s.ok) {
+        ++state.num_amountless_postings;
+    }
+    if (state.num_postings > 2 && state.num_amountless_postings > 0) {
+        input.error("transactions with 3+ postings must not omit amounts");
+    }
     if (!s.ok) {
         return;
     }
@@ -599,7 +635,8 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
         return;
     }
     const char* message = "could not parse amount";
-    std::size_t p, places;
+    std::size_t p;
+    int places;
     std::string_view commodity, value;
     if (amount[0] == '$') {
         commodity = amount.substr(0, 1);
@@ -620,8 +657,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     }
     p = value.find('.');
     if (p == std::string::npos) {
-        message = "amount missing decimal point";
-        goto error;
+        p = value.size();
     }
     for (unsigned i = 0; i < value.size(); ++i) {
         if (i < p && (p - i) % 4 == 0) {
@@ -634,7 +670,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
             goto error;
         }
     }
-    places = value.size() - p - 1;
+    places = static_cast<int>(value.size() - p) - 1;
     if (
         commodity == "$" || commodity == "USD" || commodity == "EUR"
         || commodity == "VMFXX"
@@ -647,17 +683,21 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
             message = "expected at least 2 decimal places";
             goto error;
         }
+    } else if (div == PRICE || div == COST) {
+        message = "price must be currency";
+        goto error;
     } else if (
         commodity == "VTSAX" || commodity  == "VTIAX"
         || commodity == "VBTLX" || commodity == "VTRTS"
         || commodity == "GOOG"
     ) {
-        if (div == PRICE || div == COST) {
-            message = "price must be currency";
-            goto error;
-        }
         if (places != 4) {
             message = "expected 4 decimal places";
+            goto error;
+        }
+    } else if (commodity == "Audible") {
+        if (places != -1) {
+            message = "expected a whole number";
             goto error;
         }
     } else {
