@@ -256,6 +256,9 @@ int main(int argc, char** argv) {
             << " -name '*[^2][^5][^6].conf'"
             " | sed 's|^.*/base16-||;s/.conf$//' | sort | fzf";
         options.target = exec(ss.str().c_str());
+        if (options.target.empty()) {
+            return 0;
+        }
     }
     if (!std::filesystem::is_regular_file(options.target)) {
         std::string original = options.target;

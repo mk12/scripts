@@ -13,12 +13,14 @@ secrets=~/.shellrc.local
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
 homebrew_formulas=(
-    "awk"
+    "gawk"
     "bat"
+    "dust"
     "exa"
     "fd"
     "fish"
     "git"
+    "git-delta:delta"
     "htop"
     "jq"
     "ledger"
@@ -26,6 +28,7 @@ homebrew_formulas=(
     "oath-toolkit:oathtool"
     "python:python3"
     "ripgrep:rg"
+    "sd"
     "shellcheck"
     "tldr"
     "tmux"

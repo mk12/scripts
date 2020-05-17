@@ -40,10 +40,10 @@ gap() {
 }
 
 show "0" "background"   0 10 7; gap; show "3" "comment"      8 0 0; echo
-show "8" "red"          1 0 0 ; gap; show "9" "constant"     9 0 0; echo
-show "b" "green"        2 0 0 ; gap; show "1" "highlight"   10 0 7; echo
-show "a" "class"        3 0 0 ; gap; show "2" "selection"   11 0 7; echo
-show "d" "function"     4 0 0 ; gap; show "4" "subtle fg"   12 0 0; echo
+show "8" "error/-"      1 0 0 ; gap; show "9" "constant"     9 0 0; echo
+show "b" "string/+"     2 0 0 ; gap; show "1" "highlight"   10 0 7; echo
+show "a" "type/var"     3 0 0 ; gap; show "2" "selection"   11 0 7; echo
+show "d" "function"     4 0 0 ; gap; show "4" "subtle"      12 0 0; echo
 show "e" "keyword"      5 0 0 ; gap; show "6" "emphasis"    13 0 0; echo
-show "c" "special"      6 0 0 ; gap; show "f" "deprecated"  14 0 0; echo
+show "c" "identifier"   6 0 0 ; gap; show "f" "special"     14 0 0; echo
 show "5" "foreground"   7 0 0 ; gap; show "7" "inverse bg"  15 0 0; echo
