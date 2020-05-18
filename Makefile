@@ -9,7 +9,7 @@ else
 OFLAGS := -O3
 endif
 
-PROGRAMS := inline_svg kitty-colors ledgerlint
+PROGRAMS := inline_svg kitty-colors ledgerlint yank
 
 .PHONY: all clean
 

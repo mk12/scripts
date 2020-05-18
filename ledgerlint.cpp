@@ -737,7 +737,10 @@ int main(int argc, char** argv) {
         }
     }
     if (options.file.empty()) {
-        options.file = std::getenv("LEDGER_FILE");
+        const char* var = std::getenv("LEDGER_FILE");
+        if (var != nullptr) {
+            options.file = var;
+        }
     }
     if (options.file.empty()) {
         std::fprintf(stderr, "%s: must provide a file\n", PROGRAM);
