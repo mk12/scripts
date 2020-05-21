@@ -116,7 +116,6 @@ int main(int argc, char** argv) {
         }
         const auto b64_len = base64_enc_size(len);
         base64_encode(b64_buf.get(), buf.get(), len);
-        print_osc_52(b64_buf.get(), b64_len);
         if (tmux) {
             // Sleep 1ms between OSC 52 writes for tmux. Otherwise it has flaky
             // behavior, randomly dropping passthrough envelopes.
@@ -126,6 +125,7 @@ int main(int argc, char** argv) {
                 std::fprintf(stderr, "ERROR: %zu, want %zu\n", n, len);
             }
         }
+        print_osc_52(b64_buf.get(), b64_len);
     }
     return 0;
 }
