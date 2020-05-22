@@ -17,7 +17,7 @@ if [[ $1 == '-h' ]]; then
 fi
 
 remove_extensions() {
-    while read i; do
+    while read -r i; do
         SetFile -a E "$i"
     done
 }

@@ -30,24 +30,29 @@ set -euf
 
 buf=$( cat "$@" )
 len=$( printf %s "$buf" | wc -c ) max=74994
-test $len -gt $max && echo "$0: input is $(( len - max )) bytes too long" >&2
+test "$len" -gt "$max" \
+  && echo "$0: input is $(( len - max )) bytes too long" >&2
 
 esc="\033]52;c;$( printf %s "$buf" | head -c $max | base64 | tr -d '\r\n' )\a"
 # wrap it in an envelope in case tmux set-clipboard doesn't work
 test -n "${TMUX+x}" && esc="\033Ptmux;\033$esc\033\\"
 
 # send the escape code
+# shellcheck disable=SC2059
 printf "$esc"
 
 # also copy to tmux clipboard
 # pipe to load-buffer instead of using set-buffer because it has 2036 char limit
-test -n "${TMUX+x}" && printf %s "$buf" | tmux load-buffer - || :
+if test -n "${TMUX+x}"; then
+  printf %s "$buf" | tmux load-buffer - || :
+fi
 
 case $( uname -s ) in
   Linux)
     # also copy to X11 clipboard
-    test -n "${DISPLAY+x}" && \
+    if test -n "${DISPLAY+x}"; then
       printf %s "$buf" | { xsel -i -b || xclip -sel c ;} || :
+    fi
     ;;
 
   Darwin)

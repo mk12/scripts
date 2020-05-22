@@ -27,7 +27,6 @@ main() {
     year=$1
     exchange=$2
     next=$(( year + 1 ))
-    ymd="$year-01-01"
     echo "Using USDCAD: $exchange"
     echo
     combined=0
@@ -62,7 +61,8 @@ map(
 
 while getopts "h" opt; do
     case $opt in
-        -h) usage; exit 0;;
+        h) usage; exit 0;;
+        *) exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))

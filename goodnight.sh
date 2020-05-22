@@ -12,7 +12,7 @@ force=false
 offset=-5H
 language=false
 
-while getopts ':t:j:n:v:hfdl' opt; do
+while getopts ':t:j:v:hfdl' opt; do
     case $opt in
         f) force=true;;
         t) today=$OPTAG;;
@@ -38,33 +38,32 @@ while getopts ':t:j:n:v:hfdl' opt; do
 done
 
 if [[ $force == true ]]; then
-    [[ -f $journal ]] || touch $journal
-    [[ -f $today ]] || touch $today
+    [[ -f $journal ]] || touch "$journal"
+    [[ -f $today ]] || touch "$today"
 else
     [[ -f $journal ]] || (echo "$name: $journal: no such file" >&2; exit 1)
     [[ -f $today ]] || (echo "$name: $today: no such file" >&2; exit 1)
     [[ -s $today ]] || (echo "$name: $today: file is empty" >&2; exit 1)
 fi
 
-opts="-v $offset"
-year=$(date $opts +%Y)
-month=$(date $opts +%B)
-weekday=$(date $opts +%A)
-day=$(date $opts +%e | xargs)
+year=$(date -v "$offset" +%Y)
+month=$(date -v "$offset" +%B)
+weekday=$(date -v "$offset" +%A)
+day=$(date -v "$offset" +%e | xargs)
 
 entry=$'\n'
 entry+="# $weekday, $day $month $year"$'\n\n'
-entry+=$(< $today)
+entry+=$(< "$today")
 entry+=$'\n'
-echo -n "$entry" >> $journal
+echo -n "$entry" >> "$journal"
 if $language; then
     if [[ "02468" == *"${day: -1}"* ]]; then
-        echo -n "English" > $today
+        echo -n "English" > "$today"
     else
-        echo -n "Français" > $today
+        echo -n "Français" > "$today"
     fi
 else
-    > $today
+    true > "$today"
 fi
 
-"$(dirname "$0")/journallint.py" $journal
+"$(dirname "$0")/journallint.py" "$journal"

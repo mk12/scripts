@@ -11,7 +11,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
     exit 0
 fi
 
-blog=$BLOG
+blog=~/Dropbox/Blog
 dest=~/Dropbox/Website/blog
 partial_dir=$blog/themes/equanimity/layouts/partials
 
@@ -29,7 +29,7 @@ files="$(find "$dest/post" -type f -name "index.html")"
 
 # Inline all SVG content (so that they can use the web fonts).
 for f in $files; do
-    fmap.sh "inline_svg $dest/images" $f
+    fmap.sh "inline_svg $dest/images" "$f"
 done
 
 # The files here are not needed.
@@ -38,7 +38,7 @@ mkdir "$trash"
 mv $dest/images/*.svg "$trash"
 mv $dest/fonts "$trash"
 mv $dest/js "$trash"
-find $dest/categories -type d -mindepth 1 -prune -exec mv {} $trash \;
+find $dest/categories -type d -mindepth 1 -prune -exec mv {} "$trash" \;
 
 # Publish to the server.
 if [[ $1 == "-p" || $1 == "--publish" ]]; then
@@ -47,7 +47,7 @@ if [[ $1 == "-p" || $1 == "--publish" ]]; then
         exit 1
     fi
     rsync -avz -e ssh --delete $dest/ \
-        $2@ssh.phx.nearlyfreespeech.net:/home/public/blog \
+        "$2@ssh.phx.nearlyfreespeech.net:/home/public/blog" \
         --exclude .DS_Store
 fi
 

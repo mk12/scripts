@@ -10,8 +10,6 @@ br=$(brew --prefix)/bin
 pj=~/Projects
 secrets=~/.shellrc.local
 
-script_dir=$(cd "$(dirname "$0")" && pwd)
-
 homebrew_formulas=(
     "gawk"
     "bat"
@@ -135,8 +133,8 @@ setup_simplenote_backup() {
     step "Setting Simplenote API Token"
     if ! grep -q SIMPLENOTE_API_TOKEN "$secrets"; then
         property="simperium_opts.token"
-        echo -n $pjoperty | pbcopy
-        echo "The string '$pjoperty' has been copied to the clipboard"
+        echo -n "$property" | pbcopy
+        echo "The string '$property' has been copied to the clipboard"
         echo "Paste it into the web console in Simplenote and copy the result"
         echo -n "Press return to open the browser to Simplenote: "
         read -r

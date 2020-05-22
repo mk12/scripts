@@ -11,7 +11,7 @@ endif
 
 PROGRAMS := inline_svg kitty-colors ledgerlint yank
 
-.PHONY: all clean
+.PHONY: all clean lint
 
 all: $(PROGRAMS)
 
@@ -21,3 +21,6 @@ clean:
 
 %: %.cpp
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -o $@ $<
+
+lint: $(wildcard *.sh)
+	shellcheck -e SC1090 $^
