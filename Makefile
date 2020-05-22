@@ -11,9 +11,16 @@ endif
 
 PROGRAMS := inline_svg kitty-colors ledgerlint yank
 
-.PHONY: all clean lint
+.PHONY: all help clean lint
 
 all: $(PROGRAMS)
+
+help:
+	@echo "Targets:"
+	@echo "all     build all programs"
+	@echo "help    show this help message"
+	@echo "clean   remove build output"
+	@echo "lint    lint shell scripts"
 
 clean:
 	rm -f $(PROGRAMS)
