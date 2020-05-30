@@ -8,7 +8,7 @@ primary=false
 
 br=$(brew --prefix)/bin
 pj=~/Projects
-secrets=~/.shellrc.local
+secrets=~/.profile.local
 
 homebrew_formulas=(
     "gawk"

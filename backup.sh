@@ -2,7 +2,8 @@
 
 set -eufo pipefail
 
-source ~/.shellrc
+# Need this because it's run from launchd.
+source ~/.profile
 
 prog=$(basename "$0")
 plist="com.mitchellkember.backup.plist"
