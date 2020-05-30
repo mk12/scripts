@@ -14,6 +14,10 @@ USDCAD is the exchange rate X such that CAD = USD * X
 
 Look up exchange rates here:
 https://fiscal.treasury.gov/reports-statements/treasury-reporting-rates-exchange/historical.html
+
+Note: Unlike T1135, FBAR uses the exchange rate on the last day of the year.
+Note: Unlike T1135, FBAR uses the sum of the maxes of each account, not a single
+day max across all.
 EOS
 }
 
@@ -30,6 +34,8 @@ main() {
     echo "Using USDCAD: $exchange"
     echo
     combined=0
+    # NOTE: Really, it should also check bal at the start of the year in case
+    # there are no transactions during the year.
     for acct in "${accounts[@]}"; do
         format='{"date":"%(format_date(date))","total":"%(scrub(display_total))"}\n'
         jqexpr="
