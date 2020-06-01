@@ -178,6 +178,19 @@ setup_python() {
     "$br/pip3" install pynvim pygments
 }
 
+setup_terminfo() {
+    step "Installing tmux-256color.terminfo from ncurses"
+    infocmp=/usr/local/opt/ncurses/bin/infocmp
+    [[ -f "$infocmp" ]] || "$br/brew" install ncurses
+    if ! "$infocmp" tmux-256color &> /dev/null; then
+        file=/tmp/tmux-256color.terminfo
+        "$infocmp" -A /usr/local/opt/ncurses/share/terminfo tmux-256color \
+            > "$file"
+        tic "$file"
+        rm -f "$file"
+    fi
+}
+
 setup_tmux() {
     step "Installing Tmux plugins"
     clone_git_repo tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -238,6 +251,7 @@ setup_everything() {
 
     setup_python
     setup_rust
+    setup_terminfo
     setup_tmux
     setup_vim
     setup_kitty
