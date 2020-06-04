@@ -179,16 +179,26 @@ setup_python() {
 }
 
 setup_terminfo() {
-    step "Installing tmux-256color.terminfo from ncurses"
-    infocmp=/usr/local/opt/ncurses/bin/infocmp
-    [[ -f "$infocmp" ]] || "$br/brew" install ncurses
-    if ! "$infocmp" tmux-256color &> /dev/null; then
-        file=/tmp/tmux-256color.terminfo
-        "$infocmp" -A /usr/local/opt/ncurses/share/terminfo tmux-256color \
-            > "$file"
-        tic "$file"
-        rm -f "$file"
+    file=$(mktemp)
+    step "Installing xterm-kitty.terminfo"
+    if ! TERMINFO= infocmp xterm-kitty &> /dev/null; then
+        if [[ "${TERMINFO:-}" == '/Applications/kitty.app'* ]]; then
+            infocmp xterm-kitty > "$file"
+            tic -x -o ~/.terminfo "$file"
+        else
+            echo "WARNING: Did not install xterm-kitty.terminfo"
+            echo "WARNING: Re-run $0 in kitty to install it"
+        fi
     fi
+    step "Installing tmux-256color.terminfo"
+    if ! infocmp tmux-256color &> /dev/null; then
+        prefix=/usr/local/opt/ncurses
+        [[ -d "$prefix" ]] || "$br/brew" install ncurses
+        "$prefix/bin/infocmp" -A "$prefix/share/terminfo" tmux-256color \
+            > "$file"
+        tic -o ~/.terminfo "$file"
+    fi
+    rm -f "$file"
 }
 
 setup_tmux() {
