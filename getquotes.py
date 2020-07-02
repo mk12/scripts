@@ -111,4 +111,6 @@ def main():
 
 
 if __name__ == "__main__":
+    print("If it doesn't work, look at prices in the Holdings tab")
+    print(f"and manually enter in {PRICE_DB_FILE}.\n")
     main()
