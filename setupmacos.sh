@@ -246,10 +246,13 @@ setup_ia_symlink() {
     fi
 }
 
-setup_fish_login() {
+setup_fish() {
     step "Changing login shell to fish"
     dscl . -read ~ UserShell | grep -q "$br/fish" \
         || sudo chsh -s "$br/fish" "$USER"
+
+    step "Setting fish features"
+    fish -c "set -U fish_features stderr-nocaret qmark-noglob regex-easyesc"
 }
 
 setup_everything() {
@@ -268,7 +271,7 @@ setup_everything() {
     setup_hammerspoon
 
     setup_ia_symlink
-    setup_fish_login
+    setup_fish
 
     if [[ "$primary" == true ]]; then
         setup_simplenote_backup
