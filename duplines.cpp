@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -17,19 +18,19 @@ namespace {
 // =============================================================================
 
 const char* const USAGE = R"EOS(
-Usage: duplines [-h] [-a MIN] [-b MAX] FILE ...
+Usage: duplines [-h] [-m MIN] [-M MAX] FILE ...
 
 This script finds duplicate regions in text files.
 
 Flags:
     -h  display this help messge
-    -a  minimum number of lines in region
-    -b  maximum number of lines in region
+    -m  minimum number of lines in region
+    -M  maximum number of lines in region
 )EOS";
 
 struct Options {
-    int min;
-    int max;
+    int min = 0;
+    int max = 0;
 };
 
 const char* PROGRAM = nullptr;
@@ -40,12 +41,8 @@ const char* PROGRAM = nullptr;
 
 class Input;
 
+// Zero-based line number.
 using LineNo = std::size_t;
-
-struct Line {
-    const Input* input;
-    LineNo lineno;
-};
 
 struct LineRange {
     const Input* input;
@@ -72,9 +69,8 @@ public:
         return lines_[lineno];
     }
 
-    Line last() const {
-        assert(!lines_.empty());
-        return Line{this, lines_.size() - 1};
+    LineNo end() const {
+        return lines_.size();
     }
 
 private:
@@ -100,35 +96,6 @@ private:
 };
 
 // =============================================================================
-//       Ring buffer
-// =============================================================================
-
-template <typename T>
-class Ring {
-public:
-    explicit Ring(const std::size_t size) : buf_(size), i_(0), len_(0) {}
-
-    std::size_t size() const { return len_;  }
-
-    void push(const T&& value) {
-        buf_[i_++] = std::forward<const T>(value);
-        i_ %= buf_.size();
-        len_ = std::min(buf_.size(), len_ + 1);
-    }
-
-    const T& at(std::size_t i) const {
-        assert(i < len_);
-        const auto len = buf_.size();
-        return buf_[((i_ - i - 1) % len + len) % len];
-    }
-
-private:
-    std::vector<T> buf_;
-    std::size_t i_;
-    std::size_t len_;
-};
-
-// =============================================================================
 //       Find duplicates
 // =============================================================================
 
@@ -136,20 +103,65 @@ void find_dups(std::vector<Input>& inputs, const Options& options) {
     const auto min = static_cast<std::size_t>(options.min);
     const auto max = static_cast<std::size_t>(options.max);
     const auto num_lens = max - min + 1;
-    std::vector<std::unordered_map<Hash, LineRange>> map(num_lens);
+    std::vector<std::unordered_map<Hash, std::vector<LineRange>>> map(num_lens);
+    std::set<std::pair<std::size_t, Hash>> hits;
     for (auto& input : inputs) {
-        Ring<Line> window(max);
         while (input.getline()) {
-            window.push(input.last());
             Hasher hasher;
-            std::size_t i = 0;
-            for (; i < min; ++i) {
-                hasher.combine(input.get(window.at(i).lineno));
+            const auto end = input.end();
+            LineNo len = 1;
+            for (; len < std::min(min, end); ++len) {
+                const auto start = end - len;
+                hasher.combine(input.get(start));
             }
-            for (; i < window.size(); ++i) {
-
+            for (; len >= min && len <= std::min(max, end); ++len) {
+                const auto start = end - len;
+                hasher.combine(input.get(start));
+                const auto encoded_len = len - min;
+                assert(encoded_len < num_lens);
+                const auto hash = hasher.get();
+                auto& slot = map[encoded_len][hash];
+                slot.push_back(LineRange{ &input, start, end });
+                if (slot.size() > 1) {
+                    hits.emplace(encoded_len, hash);
+                }
             }
         }
+    }
+    std::unordered_map<const Input*, std::vector<bool>> taken;
+    for (const auto& input : inputs) {
+        const auto num_lines = input.end();
+        taken.emplace(&input, num_lines);
+    }
+    // Iterate in reverse order to get the largest duplicates first, and skip
+    // over any smaller duplicates contained within them.
+    for (auto it = hits.crbegin(); it != hits.crend(); ++it) {
+        const auto encoded_len = it->first;
+        const auto hash = it->second;
+        const auto& slot = map[encoded_len][hash];
+        const auto first_range = slot.front();
+        for (const auto range : slot) {
+            auto& bitmap = taken[range.input];
+            for (auto i = range.start; i < range.end; ++i) {
+                if (bitmap[i]) {
+                    // Very conservative: never report another duplicate in
+                    // which even one line of one copy has already been reported
+                    // as part of another set of duplicates.
+                    goto skip;
+                }
+                bitmap[i] = true;
+            }
+        }
+        for (const auto range : slot) {
+            std::printf("%s:%zu\n", range.input->name(), range.start + 1);
+        }
+        std::printf("\n");
+        for (auto i = first_range.start; i < first_range.end; ++i) {
+            const auto line = first_range.input->get(i);
+            std::printf("> %.*s\n", static_cast<int>(line.size()), line.data());
+        }
+        std::printf("\n\n");
+skip:;
     }
 }
 
@@ -169,8 +181,8 @@ int main(int argc, char** argv) {
             std::fputs(USAGE, stdout);
             return 0;
         }
-        const bool a = std::strcmp(argv[i], "-a") == 0;
-        const bool b = std::strcmp(argv[i], "-b") == 0;
+        const bool a = std::strcmp(argv[i], "-m") == 0;
+        const bool b = std::strcmp(argv[i], "-M") == 0;
         if (a || b) {
             if (i + 1 == argc) {
                 std::fprintf(stderr, "%s: %s: must provide an argument\n",
@@ -196,11 +208,11 @@ int main(int argc, char** argv) {
         }
     }
     if (options.min == 0) {
-        std::fprintf(stderr, "%s: missing required flag -a", PROGRAM);
+        std::fprintf(stderr, "%s: missing required flag -m", PROGRAM);
         return 1;
     }
     if (options.max == 0) {
-        std::fprintf(stderr, "%s: missing required flag -b", PROGRAM);
+        std::fprintf(stderr, "%s: missing required flag -M", PROGRAM);
         return 1;
     }
     if (options.min > options.max) {
