@@ -10,7 +10,7 @@
 
         <key>ProgramArguments</key>
         <array>
-            <string>/Users/mitchell/GitHub/scripts/backup.sh</string>
+            <string>/Users/mitchell/Projects/scripts/backup.sh</string>
         </array>
 
         <key>StandardErrorPath</key>
