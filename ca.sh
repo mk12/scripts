@@ -13,6 +13,7 @@ usage="usage: $name COMMAND [on DATE | BEGIN [END]]
   b    Balance sheet     X
   c    Cash flow             X
   e    Expense report        X
+  g    Giving            X   X
   i    Income report         X
   n    Net income            X
   p    Payees            X   X
@@ -33,9 +34,9 @@ fi
 
 # 'ON' commands report based on a moment in time.
 # 'BE' commands report based on a Begin/End time interval.
-all_cmds='abceinpsv4'
-on_cmds='abpsv4'
-be_cmds='aceinpv'
+all_cmds='abceginpsv4'
+on_cmds='abgpsv4'
+be_cmds='aceginpv'
 
 error() {
     echo "$name: $1" >&2
@@ -129,6 +130,16 @@ summary() {
     invoke --invert bal '^Liabilities:Due To'
 }
 
+giving() {
+    echo "GIVEWELL"
+    echo "========================================"
+    invoke bal '@GiveWell'
+    echo
+    echo "ALL GIVING"
+    echo "========================================"
+    invoke bal '^Expenses:Giving'
+}
+
 investments() {
     if [[ -z "$begin" ]]; then
         echo "INVESTMENTS"
@@ -181,6 +192,7 @@ case ${1:0:1} in
     b) invoke bal '^Assets' '^Liabilities' ;;
     c) invoke bal '^Assets' ;;
     e) invoke bal '^Expenses' ;;
+    g) giving ;;
     i) invoke --invert bal '^Income' ;;
     n) invoke --invert --depth 2 bal '^Income' '^Expenses' ;;
     p) invoke payees ;;
