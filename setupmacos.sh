@@ -11,12 +11,14 @@ pj=~/Projects
 secrets=~/.profile.local
 
 homebrew_formulas=(
-    "gawk"
     "bat"
     "dust"
+    "emacs"
+    "entr"
     "exa"
     "fd"
     "fish"
+    "gawk"
     "git"
     "git-delta:delta"
     "htop"
