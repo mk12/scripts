@@ -27,6 +27,7 @@ homebrew_formulas=(
     "neovim:nvim"
     "oath-toolkit:oathtool"
     "python:python3"
+    "reattach-to-user-namespace"
     "ripgrep:rg"
     "sd"
     "shellcheck"
