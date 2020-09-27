@@ -292,7 +292,7 @@ print_homebrew_info() {
     printf "%s\n" "${homebrew_formulas[@]%:*}" | sort > "$dir/golden"
     printf "%s\n" "${homebrew_casks[@]%:*}" | sort > "$dir/golden_cask"
     "$br/brew" list | sort > "$dir/list"
-    "$br/brew" cask list | sort > "$dir/list_cask"
+    "$br/brew" list --cask | sort > "$dir/list_cask"
     "$br/brew" leaves | sort > "$dir/leaves"
 
     echo "Uninstalled"
