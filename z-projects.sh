@@ -10,6 +10,6 @@ NR == FNR {
 {
     sub(base, "", $2);
     sub("/.*", "", $2);
-    if (exists[$2]++ == 1) print $2;
+    if (exists[$2] && !seen[$2]++) print $2;
 }
 ' (ls $PROJECTS | psub) -
