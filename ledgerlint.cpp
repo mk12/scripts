@@ -93,11 +93,32 @@ struct Split {
 };
 
 Split split(std::string_view s, std::string_view delim) {
-    auto i = s.find(delim);
+    const auto i = s.find(delim);
     if (i == std::string::npos) {
         return Split{{}, {}, false};
     }
     return Split{s.substr(0, i), s.substr(i + delim.size()), true};
+}
+
+struct Comment {
+    std::size_t spaces;
+    std::string_view incl_semi;
+    std::string_view excl_semi;
+    bool ok;
+};
+
+Comment parse_comment(std::string_view s) {
+    const auto i = s.find_first_not_of(' ');
+    if (i == std::string::npos) {
+        return Comment{0, {}, {}, false};
+    }
+    if (s[i] != ';') {
+        return Comment{0, {}, {}, false};
+    }
+    const auto incl_semi = s.substr(i);
+    const auto j = incl_semi.substr(1).find_first_not_of(' ');
+    const auto excl_semi = incl_semi.substr(1 + j);
+    return Comment{i, incl_semi, excl_semi, true};
 }
 
 // =============================================================================
@@ -381,6 +402,7 @@ struct State {
 void check_transaction_entry(Input&, State&);
 void check_transaction_posting(Input&, State&);
 void check_date(Input&, std::string_view);
+void check_note(Input&, Comment, std::size_t);
 void check_amount(Input&, std::string_view, Division);
 
 void lint_transactions(Input& input, const char* const stop) {
@@ -388,6 +410,7 @@ void lint_transactions(Input& input, const char* const stop) {
         input.error("expected a blank line");
     }
     State state;
+    Comment comment;
     enum { ENTRY, NOTE, POSTINGS } expect = ENTRY;
     while (input.getline_until(stop)) {
         if (expect != POSTINGS && input.view().empty()) {
@@ -402,14 +425,18 @@ void lint_transactions(Input& input, const char* const stop) {
             break;
         case NOTE:
             expect = POSTINGS;
-            if (starts_with(input.view(), "    ; ")) {
-                state.note = input.view().substr(6);
+            comment = parse_comment(input.view());
+            if (comment.ok) {
+                check_note(input, comment, 4);
+                state.note = comment.excl_semi;
                 break;
             }
             input.error("expected a transaction note");
             [[fallthrough]];
         case POSTINGS:
-            if (starts_with(input.view(), "    ; ")) {
+            comment = parse_comment(input.view());
+            if (comment.ok) {
+                check_note(input, comment, state.num_postings == 0 ? 4 : 8);
                 break;
             }
             if (starts_with(input.view(), "    ")) {
@@ -604,6 +631,23 @@ void check_transaction_posting(Input& input, State& state) {
         )
     ) {
         input.error("expected balance assertion");
+    }
+}
+
+void check_note(Input& input, Comment comment, std::size_t expected_indent) {
+    if (comment.spaces != expected_indent) {
+        input.error("expected note to be indented %zu spaces, not %zu",
+            expected_indent, comment.spaces);
+    }
+    if (comment.incl_semi.size() < 2 || comment.excl_semi.size() < 1) {
+        input.error("ill-formed note (too short)");
+        return;
+    }
+    if (comment.incl_semi[1] != ' ') {
+        input.error("missing space after ';'");
+    }
+    if (comment.incl_semi.size() - comment.excl_semi.size() > 2) {
+        input.error("too many spaces after ';'");
     }
 }
 
