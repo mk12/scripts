@@ -389,7 +389,6 @@ void lint_transactions(Input& input, const char* const stop) {
     }
     State state;
     enum { ENTRY, NOTE, POSTINGS } expect = ENTRY;
-    // TODO: decide on balance assertion vs. assignment duplicate $10 $-10
     while (input.getline_until(stop)) {
         if (expect != POSTINGS && input.view().empty()) {
             input.error("unexpected blank line");
