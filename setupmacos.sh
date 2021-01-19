@@ -12,6 +12,8 @@ secrets=~/.profile.local
 
 homebrew_formulas=(
     "bat"
+    "clang-format"
+    "deno"
     "dust"
     "emacs"
     "entr"
@@ -21,12 +23,13 @@ homebrew_formulas=(
     "gawk"
     "git"
     "git-delta:delta"
+    "hexyl"
     "htop"
     "jq"
     "ledger"
     "neovim:nvim"
     "oath-toolkit:oathtool"
-    "python:python3"
+    "python@3.9:python3"
     "reattach-to-user-namespace"
     "ripgrep:rg"
     "sd"
@@ -167,7 +170,7 @@ setup_homebrew() {
     for entry in "${homebrew_casks[@]}"; do
         cask=${entry%:*}
         app=${entry#*:}
-        [[ -d "/Applications/$app.app" ]] || "$br/brew" cask install "$cask"
+        [[ -d "/Applications/$app.app" ]] || "$br/brew" install --cask "$cask"
     done
 }
 
@@ -178,7 +181,7 @@ setup_rust() {
 
 setup_python() {
     step "Installing Python packages"
-    "$br/pip3" install pynvim pygments
+    "$br/pip3" install pynvim
 }
 
 setup_terminfo() {
@@ -291,7 +294,7 @@ print_homebrew_info() {
     dir=$(mktemp -d)
     printf "%s\n" "${homebrew_formulas[@]%:*}" | sort > "$dir/golden"
     printf "%s\n" "${homebrew_casks[@]%:*}" | sort > "$dir/golden_cask"
-    "$br/brew" list | sort > "$dir/list"
+    "$br/brew" list --formula | sort > "$dir/list"
     "$br/brew" list --cask | sort > "$dir/list_cask"
     "$br/brew" leaves | sort > "$dir/leaves"
 
