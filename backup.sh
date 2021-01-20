@@ -5,12 +5,33 @@ set -eufo pipefail
 # Need this because it's run from launchd.
 source ~/.profile
 
-prog=$(basename "$0")
-plist="com.mitchellkember.backup.plist"
-dest_plist="$HOME/Library/LaunchAgents/$plist"
-backup_dest="$HOME/Dropbox/Archive/Backups/Simplenote"
+readonly prog=$(basename "$0")
+readonly plist="com.mitchellkember.backup.plist"
+readonly dest_plist="$HOME/Library/LaunchAgents/$plist"
+readonly backup_dir="$HOME/Dropbox/Archive/Backups"
 
+temp_dir=
+
+# Options
 install=false
+only=
+
+usage() {
+    cat <<EOS
+usage: $prog [-hi]
+
+This script backs things up to Dropbox:
+
+* Private git repositories, using git bundle
+* Simplenote, using hiroshi/simplenote-backup
+
+Options:
+    -h  show this help message
+    -i  install a launchd agent for this script
+    -r  back up only repositories
+    -s  back up only Simplenote
+EOS
+}
 
 say() {
     echo " * $*"
@@ -21,19 +42,7 @@ die() {
     exit 1
 }
 
-usage() {
-    cat <<EOS
-usage: $prog [-hi]
-
-backup up Simplenote to Dropbox using hiroshi/simplenote-backup
-
-options:
-    -h  show this help message
-    -i  install a launchd agent for this script
-EOS
-}
-
-do_install() {
+install_launchd() {
     say "Installing launchd $plist"
     cd "$(dirname "$0")"
     [[ "$(basename "$(pwd)")" == "scripts" ]] || die "not in git directory"
@@ -45,35 +54,55 @@ do_install() {
     say "Success"
 }
 
-do_backup() {
+backup() {
     say "Date: $(date)"
-    say "Backing up Simplenote in Dropbox"
-    cd "$PROJECTS" || die "\$PROJECTS not set"
-    cd simplenote-backup || die "simplenote-backup is not installed"
-    [[ -n ${SIMPLENOTE_API_TOKEN+x} ]] || die "\$SIMPLENOTE_API_TOKEN not set"
-    [[ -d "$backup_dest" ]] || die "$backup_dest does not exist"
-    temp=$(mktemp -d)
-    make TOKEN="$SIMPLENOTE_API_TOKEN" BACKUP_DIR="$temp/"
-    rsync -ac --delete "$temp/" "$backup_dest"
-    rm -rf "$temp"
-}
-
-main() {
-    if [[ "$install" == true ]]; then
-        do_install
-    else
-        do_backup
+    temp_dir=$(mktemp -d)
+    if [[ -z $only || $only == repos ]]; then
+        backup_repos
     fi
+    if [[ -z $only || $only == simplenote ]]; then
+        backup_simplenote
+    fi
+    rm -rf "$temp_dir"
 }
 
-while getopts "hi" opt; do
+backup_repos() {
+    backup_git_repo finance
+}
+
+backup_git_repo() {
+    say "Backing up $1.git in Dropbox"
+    cd "$PROJECTS/$1"
+    name="$1.gitbundle"
+    git bundle create "$temp_dir/$name" master
+    rsync -ac "$temp_dir/$name" "$backup_dir/$name"
+}
+
+backup_simplenote() {
+    say "Backing up Simplenote in Dropbox"
+    cd "$PROJECTS" || die "\$PROJECTS not found"
+    cd simplenote-backup || die "simplenote-backup not installed"
+    [[ -n ${SIMPLENOTE_API_TOKEN+x} ]] || die "\$SIMPLENOTE_API_TOKEN not set"
+    [[ -d "$backup_dir" ]] || die "$backup_dir not found"
+    dir="$temp_dir/simplenote"
+    make TOKEN="$SIMPLENOTE_API_TOKEN" BACKUP_DIR="$dir/"
+    rsync -ac --delete "$dir/" "$backup_dir/Simplenote"
+}
+
+while getopts "hirs" opt; do
     case $opt in
         h) usage; exit 0 ;;
         i) install=true ;;
+        r) only=repos ;;
+        s) only=simplenote ;;
         *) exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 [[ $# -eq 0 ]] || die "too many arguments"
 
-main
+if [[ $install == true ]]; then
+    install_launchd
+else
+    backup
+fi

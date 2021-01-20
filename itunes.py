@@ -3,9 +3,12 @@
 """This script prints top-played songs from iTunes for each year."""
 
 from collections import defaultdict
-from dateutil.parser import parse
+from datetime import datetime
 from pathlib import Path
 import xml.etree.ElementTree as ET
+import sys
+
+from dateutil.parser import parse  # pip3 install python-dateutil
 
 LIBRARY = Path.home() / "Music/iTunes/iTunes Library.xml"
 
@@ -69,7 +72,7 @@ def make_playlists(songs):
 
 
 def print_top_songs(playlists):
-    for year in range(2010, 2020):
+    for year in range(2010, datetime.now().year):
         print(f"{year}\n====")
         for i, song in enumerate(playlists[year][:25]):
             play_count = song["play_count"]
@@ -81,7 +84,7 @@ def print_top_songs(playlists):
 
 
 def main():
-    tree = ET.parse(LIBRARY)
+    tree = ET.parse(sys.argv[1] if len(sys.argv) > 1 else LIBRARY)
     songs = extract_songs(tree)
     playlists = make_playlists(songs)
     print_top_songs(playlists)

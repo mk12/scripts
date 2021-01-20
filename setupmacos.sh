@@ -108,7 +108,6 @@ setup_my_repos() {
 
     step "Cloning repositories"
     clone_git_repo mk12/dotfiles "$pj/dotfiles"
-    clone_git_repo mk12/finance "$pj/finance"
     clone_git_repo mk12/scripts "$pj/scripts"
 
     step "Building scripts"
