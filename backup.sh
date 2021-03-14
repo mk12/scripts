@@ -8,7 +8,7 @@ source ~/.profile
 readonly prog=$(basename "$0")
 readonly plist="com.mitchellkember.backup.plist"
 readonly dest_plist="$HOME/Library/LaunchAgents/$plist"
-readonly backup_dir="$HOME/Dropbox/Archive/Backups"
+readonly backup_dir="$HOME/Dropbox/Backups"
 
 temp_dir=
 
@@ -67,6 +67,7 @@ backup() {
 }
 
 backup_repos() {
+    backup_git_repo journal
     backup_git_repo finance
 }
 

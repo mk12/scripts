@@ -9,6 +9,7 @@ primary=false
 br=$(brew --prefix)/bin
 pj=~/Projects
 secrets=~/.profile.local
+backups=~/Dropbox/Backups
 
 homebrew_formulas=(
     "bat"
@@ -74,6 +75,14 @@ clone_git_repo() {
     [[ -d "$2" ]] || "$br/git" clone "git@github.com:$1" "$2"
 }
 
+clone_git_repo_from_bundle() {
+    if ! [[ -d "$pj/$1" ]]; then
+        bundle="$temp_dir/$1.gitbundle"
+        [[ -f "$bundle" ]] || die "$bundle: not found"
+        git clone -b master "$bundle" "$pj/$1"
+    fi
+}
+
 setup_xcode_cli() {
     step "Installing Xcode command line tools"
     xcode-select --print-path > /dev/null || xcode-select --install
@@ -109,6 +118,8 @@ setup_my_repos() {
     step "Cloning repositories"
     clone_git_repo mk12/dotfiles "$pj/dotfiles"
     clone_git_repo mk12/scripts "$pj/scripts"
+    clone_git_repo_from_bundle journal
+    clone_git_repo_from_bundle finance
 
     step "Building scripts"
     make -C "$pj/scripts"
@@ -243,14 +254,6 @@ setup_hammerspoon() {
     fi
 }
 
-setup_ia_symlink() {
-    step "Symlinking ~/ia"
-    if ! [[ -L ~/ia ]]; then
-        ln -s "$HOME/Dropbox/iA Writer" ~/ia
-        chflags -h hidden ~/ia
-    fi
-}
-
 setup_fish() {
     step "Changing login shell to fish"
     dscl . -read ~ UserShell | grep -q "$br/fish" \
@@ -275,7 +278,6 @@ setup_everything() {
     setup_kitty
     setup_hammerspoon
 
-    setup_ia_symlink
     setup_fish
 
     if [[ "$primary" == true ]]; then

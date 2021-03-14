@@ -1,13 +1,15 @@
 #!/bin/bash
 
+set -eufo pipefail
+
 # This script moves the contents of Today.txt to the end of Journal.txt,
 # preceded by a heading of the form "# Weekday, Day Month Year".
 
 name=$(basename "$0")
 usage="usage: $name [-hfdl] [-t file] [-j file] [-v[+|-]val[ymwdHMS]]"
 
-today=~/ia/Journal/Today.txt
-journal=~/ia/Journal/Journal.txt
+today=$PROJECTS/journal/Today.txt
+journal=$PROJECTS/journal/Journal.txt
 force=false
 offset=-5H
 language=false
@@ -67,3 +69,11 @@ else
 fi
 
 "$(dirname "$0")/journallint.py" "$journal"
+cd "$(dirname "$journal")"
+git add .
+git diff --cached
+read -rp "Commit? [Y/n]"
+case $REPLY in
+    n|N) git reset; exit 0 ;;
+esac
+git commit -m "Add entry"
