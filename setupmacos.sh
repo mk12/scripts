@@ -44,6 +44,7 @@ homebrew_formulas=(
 
 homebrew_casks=(
     "ballast"
+    "bitwarden"
     "dropbox:Dropbox"
     "hammerspoon:Hammerspoon"
     "kitty"
