@@ -1,5 +1,7 @@
+#include <cassert>
 #include <cctype>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -129,6 +131,47 @@ Comment parse_comment(std::string_view s) {
     const auto j = incl_semi.substr(1).find_first_not_of(' ');
     const auto excl_semi = incl_semi.substr(1 + j);
     return Comment{i, incl_semi, excl_semi, true};
+}
+
+// =============================================================================
+//       Fixed precision math
+// =============================================================================
+
+#define FIXED_FRAC 10000
+struct Fixed {
+    int64_t whole;
+    int64_t frac;
+    Fixed() : whole(0), frac(0) {}
+    Fixed(int64_t x) : whole(x), frac(0) {}
+    Fixed(int64_t x, int64_t y) : whole(x), frac(y) {
+        if (x > 0) {
+            assert(y >= 0);
+        } else if (x < 0) {
+            assert(y <= 0);
+        }
+    }
+};
+
+Fixed operator+(Fixed x, Fixed y) {
+    int64_t a = x.whole + y.whole;
+    int64_t b = x.frac + y.frac;
+    return Fixed(a + b / FIXED_FRAC, b % FIXED_FRAC);
+}
+
+Fixed operator*(Fixed x, Fixed y) {
+    int64_t a = x.whole * y.whole;
+    int64_t b = x.frac * y.frac
+        + FIXED_FRAC * ((x.whole * y.frac) + (x.frac * y.whole));
+    int64_t round = 0;
+    if (std::abs((b % FIXED_FRAC) * 2) >= FIXED_FRAC) {
+        round = b > 0 ? 1 : -1;
+    }
+    b = b / FIXED_FRAC + round;
+    return Fixed(a + b / FIXED_FRAC, b % FIXED_FRAC);
+}
+
+Fixed operator-(Fixed x, Fixed y) {
+    return x + Fixed(-1) * y;
 }
 
 // =============================================================================
@@ -389,6 +432,22 @@ enum Division {
     ASSERT,
 };
 
+enum StockStage {
+    StockNone,
+    StockSale,
+    StockGainOrLoss,
+    StockFee,
+};
+
+struct StockState {
+    StockStage stage = StockNone;
+    Fixed amount = {};
+    Fixed basis = {};
+    Fixed price = {};
+    Fixed gain_or_loss = {};
+    Fixed fee = {};
+};
+
 struct State {
     bool pending = false;
     bool last_dates = false;
@@ -396,6 +455,7 @@ struct State {
     unsigned num_postings = 0;
     unsigned num_amountless_postings = 0;
     unsigned div_columns[NUM_DIVISIONS] = {};
+    StockState stock_state = {};
 
     void new_transaction() {
         num_postings = 0;
@@ -403,6 +463,7 @@ struct State {
         for (unsigned i = 0; i < NUM_DIVISIONS; ++i) {
             div_columns[i] = 0;
         }
+        stock_state = {};
     }
 };
 
