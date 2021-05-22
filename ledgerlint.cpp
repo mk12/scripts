@@ -373,6 +373,7 @@ enum Division {
     // Regular amount on every posting.
     AMOUNT,
     // Lot price of the commodity, i.e. cost basis.
+    // (Yes, PRICE/COST seems backwards; just following ledger's terminology.)
     PRICE,
     // Lot date of the commodity.
     DATE,
@@ -570,19 +571,23 @@ void check_transaction_posting(Input& input, State& state) {
             }
             check_date(input,
                 section.substr(open + 1, section.size() - open - 2));
-        } else if (view[start+1] == '@') {
+        } else if (view[start+1] == '@' || view[start+1] == '(') {
             if (div > COST) {
                 input.error("column %u: posting cost out of order", start + 1);
             }
             div = COST;
             present |= 1 << COST;
-            const auto next = view[start+2];
-            if (next != ' ' && next != '@') {
-                input.error("column %u: %c: unexpected character",
-                    start + 3, next);
-                break;
+            std::string_view found;
+            for (std::string_view word : {"@ ", "@@ ", "(@) ", "(@@) "}) {
+                if (view.substr(start + 1, word.size()) == word) {
+                    found = word;
+                    break;
+                }
             }
-            check_amount(input, section.substr(3), COST);
+            if (found.empty()) {
+                input.error("column %u: expected @, @@, (@), or (@@)", start + 1);
+            }
+            check_amount(input, section.substr(found.size()), COST);
         } else if (view[start+1] == '=') {
             div = ASSERT;
             present |= 1 << ASSERT;
