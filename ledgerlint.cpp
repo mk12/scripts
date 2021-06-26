@@ -59,22 +59,37 @@ public:
         return getline() && !(stop != nullptr && line_ == stop);
     }
 
+    void warn(const char* const format, ...)
+        __attribute__((__format__ (__printf__, 2, 3)))
+    {
+        std::va_list args;
+        va_start(args, format);
+        print(format, args);
+        va_end(args);
+    }
+
     void error(const char* const format, ...)
         __attribute__((__format__ (__printf__, 2, 3)))
+    {
+        std::va_list args;
+        va_start(args, format);
+        print(format, args);
+        va_end(args);
+        success_ = false;
+    }
+
+private:
+    void print(const char* const format, va_list args)
+        __attribute__((__format__ (__printf__, 2, 0)))
     {
         std::printf("%.*s:%u: ",
             static_cast<int>(filename_.size()),
             filename_.data(),
             lineno_);
-        std::va_list args;
-        va_start(args, format);
         std::vprintf(format, args);
-        va_end(args);
         std::putchar('\n');
-        success_ = false;
     }
 
-private:
     std::string filename_;
     std::ifstream file_;
     std::string line_;
@@ -412,14 +427,19 @@ void lint_transactions(Input& input, const char* const stop) {
     }
     State state;
     Comment comment;
-    enum { ENTRY, NOTE, POSTINGS } expect = ENTRY;
+    enum { ENTRY, NOTE, POSTINGS, COMMENT } expect = ENTRY;
     while (input.getline_until(stop)) {
-        if (expect != POSTINGS && input.view().empty()) {
+        if (expect != POSTINGS && expect != COMMENT && input.view().empty()) {
             input.error("unexpected blank line");
             continue;
         }
         switch (expect) {
         case ENTRY:
+            if (starts_with(input.view(), "# ")) {
+                input.warn("commented transaction");
+                expect = COMMENT;
+                break;
+            }
             expect = NOTE;
             state.new_transaction();
             check_transaction_entry(input, state);
@@ -450,6 +470,16 @@ void lint_transactions(Input& input, const char* const stop) {
                 expect = NOTE;
             }
             break;
+        case COMMENT:
+            if (starts_with(input.view(), "# ")) {
+                break;
+            }
+            expect = ENTRY;
+            if (!input.view().empty()) {
+                input.error("expected a blank line seperating transactions");
+                expect = NOTE;
+            }
+            break;
         }
     }
 }
@@ -457,12 +487,14 @@ void lint_transactions(Input& input, const char* const stop) {
 void check_transaction_entry(Input& input, State& state) {
     auto s = split(input.view(), " * ");
     state.payee = s.right;
+    bool posted_to_pending = false;
     if (!s.ok) {
         s = split(input.view(), " ! ");
         if (!s.ok) {
             input.error("transaction has neither '*' nor '!'");
             return;
         }
+        posted_to_pending = !state.pending;
         state.pending = true;
     } else if (state.pending) {
         input.error("posted transaction appears after pending ones");
@@ -490,7 +522,7 @@ void check_transaction_entry(Input& input, State& state) {
         }
     }
     check_date(input, pri);
-    if (state.last_dates && (pri < state.last_pri
+    if (!posted_to_pending && state.last_dates && (pri < state.last_pri
             || (pri == state.last_pri && aux < state.last_aux))) {
         input.error("date out of order: %.*s=%.*s",
             static_cast<int>(pri.size()), pri.data(),
