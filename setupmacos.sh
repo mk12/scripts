@@ -262,6 +262,15 @@ setup_fish() {
 
     step "Setting fish features"
     fish -c "set -U fish_features stderr-nocaret qmark-noglob regex-easyesc"
+
+    step "Installing fisher"
+    fish <<EOS
+if not functions -q fisher
+    curl -sL https://git.io/fisher | source
+    fisher install jorgebucaran/fisher
+    fisher update
+end
+EOS
 }
 
 setup_everything() {
