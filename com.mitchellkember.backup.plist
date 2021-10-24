@@ -8,6 +8,9 @@
         <key>LimitLoadToSessionType</key>
         <string>Aqua</string>
 
+        <key>RunAtLoad</key>
+        <true/>
+
         <key>ProgramArguments</key>
         <array>
             <string>/Users/mitchell/Projects/scripts/backup.sh</string>
