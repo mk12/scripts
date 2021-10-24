@@ -658,11 +658,9 @@ void check_transaction_posting(Input& input, State& state) {
         && starts_with(account, "Assets:")
         && starts_with(account, "Liabilities:")
         && (
-            state.payee.find("ATM") != std::string::npos
-            || state.payee.find("Transfer") != std::string::npos
+            state.note == "Pay credit card"
             || state.note == "Pay debt"
             || state.note == "Collect debt"
-            || state.note == "Visa statement"
             || state.note.find("domain") != std::string::npos
             || state.note.find("payroll") != std::string::npos
         )
@@ -718,17 +716,12 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     std::size_t p;
     int places;
     std::string_view commodity, value;
-    if (amount[0] == '$') {
-        commodity = amount.substr(0, 1);
-        value = amount.substr(1);
-    } else {
-        const auto s = split(amount, " ");
-        if (!s.ok) {
-            goto error;
-        }
-        commodity = s.left;
-        value = s.right;
+    const auto s = split(amount, " ");
+    if (!s.ok) {
+        goto error;
     }
+    commodity = s.left;
+    value = s.right;
     if (value.empty()) {
         goto error;
     }
@@ -752,7 +745,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     }
     places = static_cast<int>(value.size() - p) - 1;
     if (
-        commodity == "$" || commodity == "USD" || commodity == "EUR"
+        commodity == "CAD" || commodity == "USD" || commodity == "EUR"
         || commodity == "VMFXX"
     ) {
         if (div == AMOUNT && places != 2) {
