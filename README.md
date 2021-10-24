@@ -10,7 +10,7 @@ Run `make lint` to run lint shell scripts with [ShellCheck][].
 
 ## License
 
-© 2020 Mitchell Kember
+© 2021 Mitchell Kember
 
 Scripts is available under the MIT License; see [LICENSE](LICENSE.md) for details.
 
