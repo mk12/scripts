@@ -38,7 +38,7 @@ const char* PROGRAM = nullptr;
 // =============================================================================
 
 class Input {
-public:
+   public:
     Input(const std::string& filename)
         : filename_(filename), file_(filename), lineno_(0) {}
 
@@ -60,8 +60,7 @@ public:
     }
 
     void warn(const char* const format, ...)
-        __attribute__((__format__ (__printf__, 2, 3)))
-    {
+        __attribute__((__format__(__printf__, 2, 3))) {
         std::va_list args;
         va_start(args, format);
         print(format, args);
@@ -69,8 +68,7 @@ public:
     }
 
     void error(const char* const format, ...)
-        __attribute__((__format__ (__printf__, 2, 3)))
-    {
+        __attribute__((__format__(__printf__, 2, 3))) {
         std::va_list args;
         va_start(args, format);
         print(format, args);
@@ -78,14 +76,11 @@ public:
         success_ = false;
     }
 
-private:
+   private:
     void print(const char* const format, va_list args)
-        __attribute__((__format__ (__printf__, 2, 0)))
-    {
-        std::printf("%.*s:%u: ",
-            static_cast<int>(filename_.size()),
-            filename_.data(),
-            lineno_);
+        __attribute__((__format__(__printf__, 2, 0))) {
+        std::printf("%.*s:%u: ", static_cast<int>(filename_.size()),
+                    filename_.data(), lineno_);
         std::vprintf(format, args);
         std::putchar('\n');
     }
@@ -173,39 +168,42 @@ enum PeoplePart {
     Creditors,
 };
 
+// Note: The trailing comments below prevent clang-format from messing up.
+
 const char* const PART_COMMENTS[NUM_PARTS] = {
-    [Commodities]  = ";;; Commodities",
-    [Tags]         = ";;; Tags",
-    [Accounts]     = ";;; Accounts",
-    [People]       = ";;; People",
-    [Transactions] = ";;; Transactions",
+    [Commodities] = ";;; Commodities",    //
+    [Tags] = ";;; Tags",                  //
+    [Accounts] = ";;; Accounts",          //
+    [People] = ";;; People",              //
+    [Transactions] = ";;; Transactions",  //
 };
 
 const char* const COMMODITY_PART_COMMENTS[NUM_COMMODITY_PARTS] = {
-    [Currencies]  = "; Currencies",
-    [MutualFunds] = "; Mutual funds",
-    [Stocks]      = "; Stocks",
-    [Other]       = "; Other",
+    [Currencies] = "; Currencies",     //
+    [MutualFunds] = "; Mutual funds",  //
+    [Stocks] = "; Stocks",             //
+    [Other] = "; Other",               //
 };
 
 const char* const ACCOUNT_PART_COMMENTS[NUM_ACCOUNT_PARTS] = {
-    [Equity]      = "; Equity",
-    [Assets]      = "; Assets",
-    [Liabilities] = "; Liabilities",
-    [Income]      = "; Income",
-    [Expenses]    = "; Expenses",
-    [Virtual]     = "; Virtual",
+    [Equity] = "; Equity",            //
+    [Assets] = "; Assets",            //
+    [Liabilities] = "; Liabilities",  //
+    [Income] = "; Income",            //
+    [Expenses] = "; Expenses",        //
+    [Virtual] = "; Virtual",          //
 };
 
 const char* const PEOPLE_PART_COMMENTS[NUM_PEOPLE_PARTS] = {
-    [Debtors]   = "; Debtors",
-    [Creditors] = "; Creditors",
+    [Debtors] = "; Debtors",      //
+    [Creditors] = "; Creditors",  //
 };
 
 typedef void (*LintFn)(Input&, const char*);
 
 void skip(Input& input, const char* const stop) {
-    while (input.getline_until(stop));
+    while (input.getline_until(stop))
+        ;
 }
 
 void lint_commodities(Input&, const char*);
@@ -225,45 +223,41 @@ void lint_people_debtors(Input&, const char*);
 void lint_people_creditors(Input&, const char*);
 
 const LintFn PART_FUNCTIONS[NUM_PARTS] = {
-    [Commodities]  = lint_commodities,
-    [Tags]         = lint_tags,
-    [Accounts]     = lint_accounts,
-    [People]       = lint_people,
-    [Transactions] = lint_transactions,
+    [Commodities] = lint_commodities,  //
+    [Tags] = lint_tags,                //
+    [Accounts] = lint_accounts,  //
+    [People] = lint_people,      //
+    [Transactions] = lint_transactions,  //
 };
 
 const LintFn COMMODITY_PART_FUNCTIONS[NUM_COMMODITY_PARTS] = {
-    [Currencies]  = skip,
-    [MutualFunds] = skip,
-    [Stocks]      = skip,
-    [Other]       = skip,
+    [Currencies] = skip,   //
+    [MutualFunds] = skip,  //
+    [Stocks] = skip,       //
+    [Other] = skip,        //
 };
 
 const LintFn ACCOUNT_PART_FUNCTIONS[NUM_ACCOUNT_PARTS] = {
-    [Equity]      = lint_account_equity,
-    [Assets]      = lint_account_assets,
-    [Liabilities] = lint_account_liabilities,
-    [Income]      = lint_account_income,
-    [Expenses]    = lint_account_expenses,
-    [Virtual]     = lint_account_virtual,
+    [Equity] = lint_account_equity,            //
+    [Assets] = lint_account_assets,            //
+    [Liabilities] = lint_account_liabilities,  //
+    [Income] = lint_account_income,            //
+    [Expenses] = lint_account_expenses,        //
+    [Virtual] = lint_account_virtual,          //
 };
 
-const LintFn  PEOPLE_PART_FUNCTIONS[NUM_PEOPLE_PARTS] = {
-    [Debtors]   = lint_people_debtors,
-    [Creditors] = lint_people_creditors,
+const LintFn PEOPLE_PART_FUNCTIONS[NUM_PEOPLE_PARTS] = {
+    [Debtors] = lint_people_debtors,      //
+    [Creditors] = lint_people_creditors,  //
 };
 
 // =============================================================================
 //       Linter helpers
 // =============================================================================
 
-void check_sections(
-    Input& input,
-    const char* const stop,
-    const char* const comments[],
-    const LintFn functions[],
-    const unsigned num_sections
-) {
+void check_sections(Input& input, const char* const stop,
+                    const char* const comments[], const LintFn functions[],
+                    const unsigned num_sections) {
     while (input.getline()) {
         if (input.view() == comments[0]) {
             break;
@@ -274,39 +268,37 @@ void check_sections(
             input.error("reached EOF before %s", comments[i]);
             break;
         }
-        const char* const substop = i + 1 == num_sections ? stop : comments[i+1];
+        const char* const substop =
+            i + 1 == num_sections ? stop : comments[i + 1];
         functions[i](input, substop);
     }
 }
 
-void check_accounts(
-    Input& input, const char* stop, const char* part, const char* prefix
-) {
+void check_accounts(Input& input, const char* stop, const char* part,
+                    const char* prefix) {
     while (input.getline_until(stop)) {
         if (starts_with(input.view(), "account ")) {
             const auto account = input.view().substr(std::strlen("account "));
             if (!starts_with(account, prefix)) {
-                input.error("non-%s account in %s section: %.*s",
-                    part, part,
-                    static_cast<int>(account.size()), account.data());
+                input.error("non-%s account in %s section: %.*s", part, part,
+                            static_cast<int>(account.size()), account.data());
             }
         }
     }
 }
 
-void check_accounts_sorted(
-    Input& input, const char* stop, const char* part, const char* prefix
-) {
+void check_accounts_sorted(Input& input, const char* stop, const char* part,
+                           const char* prefix) {
     std::string last;
     while (input.getline_until(stop)) {
         if (starts_with(input.view(), "account ")) {
             const auto account = input.view().substr(std::strlen("account "));
             if (!starts_with(account, prefix)) {
-                input.error("non-%s account in %s section: %.*s",
-                    part, part, static_cast<int>(account.size()), account.data());
+                input.error("non-%s account in %s section: %.*s", part, part,
+                            static_cast<int>(account.size()), account.data());
             } else if (!last.empty() && !(last < account)) {
-                input.error("%s account out of order: %.*s",
-                    part, static_cast<int>(account.size()), account.data());
+                input.error("%s account out of order: %.*s", part,
+                            static_cast<int>(account.size()), account.data());
             }
             last = account;
         }
@@ -318,13 +310,12 @@ void check_accounts_sorted(
 // =============================================================================
 
 void lint(Input& input) {
-    check_sections(input, nullptr,
-        PART_COMMENTS, PART_FUNCTIONS, NUM_PARTS);
+    check_sections(input, nullptr, PART_COMMENTS, PART_FUNCTIONS, NUM_PARTS);
 }
 
 void lint_commodities(Input& input, const char* const stop) {
-    check_sections(input, stop,
-        COMMODITY_PART_COMMENTS, COMMODITY_PART_FUNCTIONS, NUM_COMMODITY_PARTS);
+    check_sections(input, stop, COMMODITY_PART_COMMENTS,
+                   COMMODITY_PART_FUNCTIONS, NUM_COMMODITY_PARTS);
 }
 
 void lint_tags(Input& input, const char* const stop) {
@@ -334,7 +325,7 @@ void lint_tags(Input& input, const char* const stop) {
             const auto tag = input.view().substr(std::strlen("tag "));
             if (!last.empty() && !(last < tag)) {
                 input.error("tag out of order: %.*s",
-                    static_cast<int>(tag.size()), tag.data());
+                            static_cast<int>(tag.size()), tag.data());
             }
             last = tag;
         }
@@ -342,13 +333,13 @@ void lint_tags(Input& input, const char* const stop) {
 }
 
 void lint_accounts(Input& input, const char* const stop) {
-    check_sections(input, stop,
-        ACCOUNT_PART_COMMENTS, ACCOUNT_PART_FUNCTIONS, NUM_ACCOUNT_PARTS);
+    check_sections(input, stop, ACCOUNT_PART_COMMENTS, ACCOUNT_PART_FUNCTIONS,
+                   NUM_ACCOUNT_PARTS);
 }
 
 void lint_people(Input& input, const char* const stop) {
-    check_sections(input, stop,
-        PEOPLE_PART_COMMENTS, PEOPLE_PART_FUNCTIONS, NUM_PEOPLE_PARTS);
+    check_sections(input, stop, PEOPLE_PART_COMMENTS, PEOPLE_PART_FUNCTIONS,
+                   NUM_PEOPLE_PARTS);
 }
 
 void lint_account_equity(Input& input, const char* const stop) {
@@ -499,7 +490,7 @@ void check_transaction_entry(Input& input, State& state) {
     } else if (state.pending) {
         input.error("posted transaction appears after pending ones");
     }
-    if (s.left.size() >= 1 && s.left[s.left.size()-1] == ' ') {
+    if (s.left.size() >= 1 && s.left[s.left.size() - 1] == ' ') {
         input.error("excess whitespace after date");
     }
     if (s.right.size() >= 1 && s.right[0] == ' ') {
@@ -514,19 +505,20 @@ void check_transaction_entry(Input& input, State& state) {
         check_date(input, aux);
         if (pri == aux) {
             input.error("aux date %.*s is redundant",
-                static_cast<int>(aux.size()), aux.data());
+                        static_cast<int>(aux.size()), aux.data());
         } else if (pri < aux) {
             input.error("aux date %.*s is later than primary date %.*s",
-                static_cast<int>(aux.size()), aux.data(),
-                static_cast<int>(pri.size()), pri.data());
+                        static_cast<int>(aux.size()), aux.data(),
+                        static_cast<int>(pri.size()), pri.data());
         }
     }
     check_date(input, pri);
-    if (!posted_to_pending && state.last_dates && (pri < state.last_pri
-            || (pri == state.last_pri && aux < state.last_aux))) {
+    if (!posted_to_pending && state.last_dates &&
+        (pri < state.last_pri ||
+         (pri == state.last_pri && aux < state.last_aux))) {
         input.error("date out of order: %.*s=%.*s",
-            static_cast<int>(pri.size()), pri.data(),
-            static_cast<int>(aux.size()), aux.data());
+                    static_cast<int>(pri.size()), pri.data(),
+                    static_cast<int>(aux.size()), aux.data());
     }
     state.last_dates = true;
     state.last_pri = pri;
@@ -572,7 +564,7 @@ void check_transaction_posting(Input& input, State& state) {
                 present |= 1 << AMOUNT;
                 check_amount(input, section, AMOUNT);
             }
-        } else if (view[end-1] == '}') {
+        } else if (view[end - 1] == '}') {
             if (div > PRICE) {
                 input.error("column %u: lot price out of order", start + 1);
             }
@@ -585,12 +577,12 @@ void check_transaction_posting(Input& input, State& state) {
             }
             if (section[open + 1] == ' ') {
                 input.error("column %u: unexpected space in lot price",
-                    start + static_cast<unsigned>(open) + 2);
+                            start + static_cast<unsigned>(open) + 2);
             }
             check_amount(input,
-                section.substr(open + 1, section.size() - open - 2),
-                PRICE);
-        } else if (view[end-1] == ']') {
+                         section.substr(open + 1, section.size() - open - 2),
+                         PRICE);
+        } else if (view[end - 1] == ']') {
             if (div > DATE) {
                 input.error("column %u: lot date out of order", start + 1);
             }
@@ -602,8 +594,8 @@ void check_transaction_posting(Input& input, State& state) {
                 break;
             }
             check_date(input,
-                section.substr(open + 1, section.size() - open - 2));
-        } else if (view[start+1] == '@' || view[start+1] == '(') {
+                       section.substr(open + 1, section.size() - open - 2));
+        } else if (view[start + 1] == '@' || view[start + 1] == '(') {
             if (div > COST) {
                 input.error("column %u: posting cost out of order", start + 1);
             }
@@ -617,20 +609,19 @@ void check_transaction_posting(Input& input, State& state) {
                 }
             }
             if (found.empty()) {
-                input.error("column %u: expected @, @@, (@), or (@@)", start + 1);
+                input.error("column %u: expected @, @@, (@), or (@@)",
+                            start + 1);
             }
             check_amount(input, section.substr(found.size()), COST);
-        } else if (view[start+1] == '=') {
+        } else if (view[start + 1] == '=') {
             div = ASSERT;
             present |= 1 << ASSERT;
-            if (view[start+2] != ' ') {
+            if (view[start + 2] != ' ') {
                 input.error("column %u: missing space after '='", start + 3);
             }
             const auto rest = section.substr(3);
-            if (!(
-                view[end-1] == '0'
-                && rest.find_first_not_of(' ') == rest.size() - 1
-            )) {
+            if (!(view[end - 1] == '0' &&
+                  rest.find_first_not_of(' ') == rest.size() - 1)) {
                 check_amount(input, rest, ASSERT);
             }
         } else if (!empty) {
@@ -654,17 +645,12 @@ void check_transaction_posting(Input& input, State& state) {
     if (present & (1 << PRICE) && !(present & (1 << COST))) {
         input.error("posting has {}price but no @cost");
     }
-    if (div < ASSERT
-        && starts_with(account, "Assets:")
-        && starts_with(account, "Liabilities:")
-        && (
-            state.note == "Pay credit card"
-            || state.note == "Pay debt"
-            || state.note == "Collect debt"
-            || state.note.find("domain") != std::string::npos
-            || state.note.find("payroll") != std::string::npos
-        )
-    ) {
+    if (div < ASSERT && starts_with(account, "Assets:") &&
+        starts_with(account, "Liabilities:") &&
+        (state.note == "Pay credit card" || state.note == "Pay debt" ||
+         state.note == "Collect debt" ||
+         state.note.find("domain") != std::string::npos ||
+         state.note.find("payroll") != std::string::npos)) {
         input.error("expected balance assertion");
     }
 }
@@ -672,7 +658,7 @@ void check_transaction_posting(Input& input, State& state) {
 void check_note(Input& input, Comment comment, std::size_t expected_indent) {
     if (comment.spaces != expected_indent) {
         input.error("expected note to be indented %zu spaces, not %zu",
-            expected_indent, comment.spaces);
+                    expected_indent, comment.spaces);
     }
     if (comment.incl_semi.size() < 2 || comment.excl_semi.size() < 1) {
         input.error("ill-formed note (too short)");
@@ -687,21 +673,13 @@ void check_note(Input& input, Comment comment, std::size_t expected_indent) {
 }
 
 void check_date(Input& input, std::string_view date) {
-    if (!(
-        date.size() == 10
-        & date[0] >= '0' & date[0] <= '9'
-        & date[1] >= '0' & date[1] <= '9'
-        & date[2] >= '0' & date[2] <= '9'
-        & date[3] >= '0' & date[3] <= '9'
-        & date[4] == '/'
-        & date[5] >= '0' & date[5] <= '1'
-        & date[6] >= '0' & date[6] <= '9'
-        & date[7] == '/'
-        & date[8] >= '0' & date[8] <= '3'
-        & date[9] >= '0' & date[9] <= '9'
-    )) {
-        input.error("ill-formed date: %.*s",
-            static_cast<int>(date.size()), date.data());
+    if (!(date.size() == 10 & date[0] >= '0' & date[0] <= '9' & date[1] >= '0' &
+          date[1] <= '9' & date[2] >= '0' & date[2] <= '9' & date[3] >= '0' &
+          date[3] <= '9' & date[4] == '/' & date[5] >= '0' & date[5] <= '1' &
+          date[6] >= '0' & date[6] <= '9' & date[7] == '/' & date[8] >= '0' &
+          date[8] <= '3' & date[9] >= '0' & date[9] <= '9')) {
+        input.error("ill-formed date: %.*s", static_cast<int>(date.size()),
+                    date.data());
     }
 }
 
@@ -744,10 +722,8 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
         }
     }
     places = static_cast<int>(value.size() - p) - 1;
-    if (
-        commodity == "CAD" || commodity == "USD" || commodity == "EUR"
-        || commodity == "VMFXX"
-    ) {
+    if (commodity == "CAD" || commodity == "USD" || commodity == "EUR" ||
+        commodity == "VMFXX") {
         if (div == AMOUNT && places != 2) {
             message = "expected 2 decimal places";
             goto error;
@@ -759,11 +735,9 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     } else if (div == PRICE || div == COST) {
         message = "price must be currency";
         goto error;
-    } else if (
-        commodity == "VTSAX" || commodity  == "VTIAX"
-        || commodity == "VBTLX" || commodity == "VTRTS"
-        || commodity == "GOOG"
-    ) {
+    } else if (commodity == "VTSAX" || commodity == "VTIAX" ||
+               commodity == "VBTLX" || commodity == "VTRTS" ||
+               commodity == "GOOG") {
         if (places != 4) {
             message = "expected 4 decimal places";
             goto error;
@@ -780,12 +754,12 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     return;
 
 error:
-    input.error("%.*s: %s",
-        static_cast<int>(amount.size()), amount.data(), message);
+    input.error("%.*s: %s", static_cast<int>(amount.size()), amount.data(),
+                message);
     return;
 }
 
-} // namespace
+}  // namespace
 
 // =============================================================================
 //       Main
@@ -803,7 +777,7 @@ int main(int argc, char** argv) {
         if (std::strcmp(argv[i], "-f") == 0) {
             if (i + 1 == argc) {
                 std::fprintf(stderr, "%s: -f: must provide an argument\n",
-                    PROGRAM);
+                             PROGRAM);
                 return 1;
             }
             options.file = argv[++i];
@@ -820,8 +794,8 @@ int main(int argc, char** argv) {
         return 1;
     }
     if (!std::filesystem::is_regular_file(options.file)) {
-        std::fprintf(stderr, "%s: %s: file not found\n",
-            PROGRAM, options.file.c_str());
+        std::fprintf(stderr, "%s: %s: file not found\n", PROGRAM,
+                     options.file.c_str());
         return 1;
     }
     Input input(options.file);

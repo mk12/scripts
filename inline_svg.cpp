@@ -18,8 +18,9 @@ int main(int argc, char* argv[]) {
                 if (start != std::string::npos) {
                     std::string name = line.substr(start + 1, end - start - 1);
                     auto len = name.length();
-                    if (len > 4 && name[len-4] == '.' && name[len-3] == 's'
-                            && name[len-2] == 'v' &&  name[len-1] == 'g') {
+                    if (len > 4 && name[len - 4] == '.' &&
+                        name[len - 3] == 's' && name[len - 2] == 'v' &&
+                        name[len - 1] == 'g') {
                         svg = true;
                         std::string path(argv[1]);
                         if (path.back() != '/') {
@@ -28,7 +29,8 @@ int main(int argc, char* argv[]) {
                         path += name;
                         std::ifstream file(path.c_str());
                         if (!file) {
-                            std::cerr << "could not open file '" << path << "'\n";
+                            std::cerr << "could not open file '" << path
+                                      << "'\n";
                             return 1;
                         }
                         // Consume xml and DOCTYPE lines.

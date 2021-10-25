@@ -37,14 +37,15 @@ def write_counts(output, input, regex):
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("input", metavar="F", help="Journal input file")
     parser.add_argument(
-        "input", metavar="F", help="Journal input file")
+        "-o", "--output", default="wordcount.csv", help="Output CSV file"
+    )
     parser.add_argument(
-        "-o", "--output", default="wordcount.csv", help="Output CSV file")
-    parser.add_argument(
-        "-r", "--regex", default=r'\b\w+\b',
-        help="Count occurrences of regex per day")
+        "-r", "--regex", default=r"\b\w+\b", help="Count occurrences of regex per day"
+    )
     return parser.parse_args()
 
 

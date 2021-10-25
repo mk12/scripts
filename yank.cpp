@@ -41,10 +41,8 @@ constexpr std::size_t base64_dec_size(const std::size_t len) {
     return 3 * len / 4;
 }
 
-void base64_encode(
-        char* const dest,
-        const char* const source,
-        const std::size_t len) {
+void base64_encode(char* const dest, const char* const source,
+                   const std::size_t len) {
     auto dst = dest;
     auto src = reinterpret_cast<const unsigned char*>(source);
     const auto end = src + len;
@@ -74,16 +72,14 @@ constexpr std::size_t NON_TMUX_ESCAPE_SIZE =
 const char* prefix = "";
 const char* suffix = "";
 
-void reset_osc_52() {
-    std::printf("%s\x1b]52;c;!\a%s", prefix, suffix);
-}
+void reset_osc_52() { std::printf("%s\x1b]52;c;!\a%s", prefix, suffix); }
 
 void print_osc_52(const char* const base64, const std::size_t len) {
-    std::printf("%s\x1b]52;c;%.*s\a%s",
-        prefix, static_cast<int>(len), base64, suffix);
+    std::printf("%s\x1b]52;c;%.*s\a%s", prefix, static_cast<int>(len), base64,
+                suffix);
 }
 
-} // namespace
+}  // namespace
 
 int main(int argc, char** argv) {
     (void)argv;

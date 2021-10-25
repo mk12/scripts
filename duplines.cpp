@@ -46,34 +46,26 @@ using LineNo = std::size_t;
 
 struct LineRange {
     const Input* input;
-    LineNo start; // inclusive
-    LineNo end;   // exclusive
+    LineNo start;  // inclusive
+    LineNo end;    // exclusive
 };
 
 class Input {
-public:
+   public:
     explicit Input(const char* const filename)
-         : filename_(filename), file_(filename) {}
+        : filename_(filename), file_(filename) {}
 
     const char* name() const { return filename_; }
 
-    bool exists() const {
-        return std::filesystem::is_regular_file(filename_);
-    }
+    bool exists() const { return std::filesystem::is_regular_file(filename_); }
 
-    bool getline() {
-        return bool(std::getline(file_, lines_.emplace_back()));
-    }
+    bool getline() { return bool(std::getline(file_, lines_.emplace_back())); }
 
-    std::string_view get(const LineNo lineno) const {
-        return lines_[lineno];
-    }
+    std::string_view get(const LineNo lineno) const { return lines_[lineno]; }
 
-    LineNo end() const {
-        return lines_.size();
-    }
+    LineNo end() const { return lines_.size(); }
 
-private:
+   private:
     const char* filename_;
     std::ifstream file_;
     std::vector<std::string> lines_;
@@ -82,7 +74,7 @@ private:
 using Hash = std::size_t;
 
 class Hasher {
-public:
+   public:
     Hash get() const { return h_; }
 
     template <typename T>
@@ -91,7 +83,7 @@ public:
         h_ = h_ * 31 + std::hash<T>()(value);
     }
 
-private:
+   private:
     Hash h_ = 17;
 };
 
@@ -121,7 +113,7 @@ void find_dups(std::vector<Input>& inputs, const Options& options) {
                 assert(encoded_len < num_lens);
                 const auto hash = hasher.get();
                 auto& slot = map[encoded_len][hash];
-                slot.push_back(LineRange{ &input, start, end });
+                slot.push_back(LineRange{&input, start, end});
                 if (slot.size() > 1) {
                     hits.emplace(encoded_len, hash);
                 }
@@ -161,11 +153,11 @@ void find_dups(std::vector<Input>& inputs, const Options& options) {
             std::printf("> %.*s\n", static_cast<int>(line.size()), line.data());
         }
         std::printf("\n\n");
-skip:;
+    skip:;
     }
 }
 
-} // namespace
+}  // namespace
 
 // =============================================================================
 //       Main
@@ -186,7 +178,7 @@ int main(int argc, char** argv) {
         if (a || b) {
             if (i + 1 == argc) {
                 std::fprintf(stderr, "%s: %s: must provide an argument\n",
-                    PROGRAM, argv[i]);
+                             PROGRAM, argv[i]);
                 return 1;
             }
             ++i;
@@ -194,13 +186,12 @@ int main(int argc, char** argv) {
             try {
                 *value = std::stoi(argv[i]);
             } catch (const std::logic_error&) {
-                std::fprintf(stderr, "%s: %s: invalid number\n",
-                    PROGRAM, argv[i]);
+                std::fprintf(stderr, "%s: %s: invalid number\n", PROGRAM,
+                             argv[i]);
                 return 1;
             }
             if (*value <= 1) {
-                std::fprintf(stderr, "%s: %s: must be > 1\n",
-                    PROGRAM, argv[i]);
+                std::fprintf(stderr, "%s: %s: must be > 1\n", PROGRAM, argv[i]);
                 return 1;
             }
         } else {
@@ -221,7 +212,8 @@ int main(int argc, char** argv) {
     }
     for (const auto& input : inputs) {
         if (!input.exists()) {
-            std::fprintf(stderr, "%s: %s: file not found\n", PROGRAM, input.name());
+            std::fprintf(stderr, "%s: %s: file not found\n", PROGRAM,
+                         input.name());
             return 1;
         }
     }

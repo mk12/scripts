@@ -121,12 +121,8 @@ ColorSet parse_color_file(const char* filename) {
 }
 
 void set_colors_osc(const ColorSet& colors) {
-    const char* pre = inside_tmux()
-        ? "\x1bPtmux;\x1b\x1b]"
-        : "\x1b]";
-    const char* post = inside_tmux()
-        ? "\a\x1b\\\x1b\\"
-        : "\a";
+    const char* pre = inside_tmux() ? "\x1bPtmux;\x1b\x1b]" : "\x1b]";
+    const char* post = inside_tmux() ? "\a\x1b\\\x1b\\" : "\a";
     std::ostringstream ss;
     char buffer[7];
     for (const auto& entry : colors) {
@@ -158,12 +154,10 @@ double bit_to_linear(unsigned bit) {
 }
 
 unsigned linear_to_bit(double linear) {
-    double x = linear <= 0.0031308
-        ? linear * 12.92
-        : 1.055 * std::pow(linear, 1 / 2.4) - 0.055;
+    double x = linear <= 0.0031308 ? linear * 12.92
+                                   : 1.055 * std::pow(linear, 1 / 2.4) - 0.055;
     return static_cast<unsigned>(
-        std::max(0, std::min(255,
-            static_cast<int>(std::lround(x * 255)))));
+        std::max(0, std::min(255, static_cast<int>(std::lround(x * 255)))));
 }
 
 Color interpolate_color(Color c1, Color c2, double t) {
@@ -182,12 +176,12 @@ Color interpolate_color(Color c1, Color c2, double t) {
     return (r << 16) + (g << 8) + b;
 }
 
-void animate_colors(
-        const ColorSet& src, const ColorSet& dst, int frames, int delay_ms) {
+void animate_colors(const ColorSet& src, const ColorSet& dst, int frames,
+                    int delay_ms) {
     const std::chrono::milliseconds delay(delay_ms);
     for (int i = 0; i < frames; ++i) {
         ColorSet colors;
-        for (const auto& entry: src) {
+        for (const auto& entry : src) {
             const double t = static_cast<double>(i + 1) / frames;
             Color interp =
                 interpolate_color(entry.second, dst.at(entry.first), t);
@@ -199,14 +193,14 @@ void animate_colors(
 }
 
 void update_running_kitties(const std::string& colors_file) {
-    for (const auto & entry :
-            std::filesystem::directory_iterator(kitty_sockets_dir())) {
+    for (const auto& entry :
+         std::filesystem::directory_iterator(kitty_sockets_dir())) {
         if (entry.path().extension() != ".sock") {
             continue;
         }
         std::ostringstream ss;
         ss << "kitty @ --to 'unix:" << entry.path().string()
-            << "' set-colors -a -c '"  << colors_file << "' &";
+           << "' set-colors -a -c '" << colors_file << "' &";
         system(ss.str().c_str());
     }
     wait(nullptr);
@@ -217,7 +211,7 @@ void update_kitty_conf(const std::string& colors_file) {
     file << "include " << colors_file << "\n";
 }
 
-} // namespace
+}  // namespace
 
 int main(int argc, char** argv) {
     PROGRAM = argv[0];
@@ -248,13 +242,13 @@ int main(int argc, char** argv) {
     if (options.target.empty()) {
         if (!std::filesystem::is_directory(colors_dir)) {
             std::cerr << PROGRAM << ": " << colors_dir
-                << ": directory not found\n";
+                      << ": directory not found\n";
             return 1;
         }
         std::ostringstream ss;
         ss << "find " << colors_dir
-            << " -name '*[^2][^5][^6].conf'"
-            " | sed 's|^.*/base16-||;s/.conf$//' | sort | fzf";
+           << " -name '*[^2][^5][^6].conf'"
+              " | sed 's|^.*/base16-||;s/.conf$//' | sort | fzf";
         options.target = exec(ss.str().c_str());
         if (options.target.empty()) {
             return 0;
@@ -265,7 +259,7 @@ int main(int argc, char** argv) {
         options.target = colors_dir + "/base16-" + options.target + ".conf";
         if (!std::filesystem::is_regular_file(options.target)) {
             std::cerr << PROGRAM << ": " << original
-                << ": file or color scheme name not found\n";
+                      << ": file or color scheme name not found\n";
             return 1;
         }
     }
@@ -276,14 +270,14 @@ int main(int argc, char** argv) {
         config_file >> token;
         if (token != "include") {
             std::cerr << PROGRAM << ": " << kitty_colors_conf_file()
-                << ": malformed config file\n";
+                      << ": malformed config file\n";
             return 1;
         }
         config_file >> token;
         const auto& path = token;
         if (!std::filesystem::is_regular_file(path)) {
-            std::cerr << PROGRAM << ": " << kitty_colors_conf_file()
-                << ": " << path << ": file not found\n";
+            std::cerr << PROGRAM << ": " << kitty_colors_conf_file() << ": "
+                      << path << ": file not found\n";
             return 1;
         }
         auto src_colors = parse_color_file(path.c_str());

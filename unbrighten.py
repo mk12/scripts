@@ -40,7 +40,7 @@ def main():
     pty.spawn(args.command, master_read())
 
 
-ESC = 0x1b
+ESC = 0x1B
 LSQUARE = ord("[")
 M = ord("m")
 ZERO = ord("0")
