@@ -20,9 +20,7 @@ read -r token
 
 user=mk12
 repo=$(basename "$(pwd)")
-line="origin"$'\t'"git@github.com:$user/$repo.git"
-both_lines="$line (fetch)"$'\n'"$line (push)"
-[[ "$(git remote -v)" == "$both_lines" ]] || die "unexpected remote"
+git remote -v | grep -F "git@github.com:$user/$repo" || die "not on github"
 
 step git branch -m master main
 step git push -u origin main
