@@ -24,7 +24,7 @@ dst_all := $(dst_sh) $(dst_py) $(dst_pl) $(dst_cpp)
 
 .PHONY: all help clean lint
 
-all: $(programs)
+all: $(dst_all)
 
 help:
 	@echo "Targets:"

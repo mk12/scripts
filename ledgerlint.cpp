@@ -670,6 +670,9 @@ void check_note(Input& input, Comment comment, std::size_t expected_indent) {
     if (comment.incl_semi.size() - comment.excl_semi.size() > 2) {
         input.error("too many spaces after ';'");
     }
+    if (starts_with(comment.excl_semi, "FIXME:")) {
+        input.error("FIXME: note should be removed");
+    }
 }
 
 void check_date(Input& input, std::string_view date) {

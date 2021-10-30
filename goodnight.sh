@@ -68,7 +68,7 @@ else
     true > "$today"
 fi
 
-"$(dirname "$0")/journallint.py" "$journal"
+journallint "$journal"
 cd "$(dirname "$journal")"
 git add .
 git diff --cached
