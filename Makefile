@@ -11,6 +11,7 @@ src_cpp := $(wildcard *.cpp)
 
 build := bin
 build_cpp := $(addprefix $(build)/,$(basename $(src_cpp)))
+build_all := $(build_cpp)
 
 dst := $(PREFIX)/bin
 dst_sh := $(addprefix $(dst)/,$(basename $(src_sh)))
@@ -24,7 +25,7 @@ dst_all := $(dst_sh) $(dst_py) $(dst_pl) $(dst_cpp)
 
 .PHONY: all help clean lint
 
-all: $(dst_all)
+all: $(build_all)
 
 help:
 	@echo "Targets:"
