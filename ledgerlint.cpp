@@ -223,10 +223,10 @@ void lint_people_debtors(Input&, const char*);
 void lint_people_creditors(Input&, const char*);
 
 const LintFn PART_FUNCTIONS[NUM_PARTS] = {
-    [Commodities] = lint_commodities,  //
-    [Tags] = lint_tags,                //
-    [Accounts] = lint_accounts,  //
-    [People] = lint_people,      //
+    [Commodities] = lint_commodities,    //
+    [Tags] = lint_tags,                  //
+    [Accounts] = lint_accounts,          //
+    [People] = lint_people,              //
     [Transactions] = lint_transactions,  //
 };
 

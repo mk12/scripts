@@ -1,29 +1,18 @@
-SHELL := /bin/bash
-
-PREFIX ?= $(HOME)/.local
 CXXFLAGS := -std=c++17 -W -Wall $(if $(DEBUG),-O0 -g,-O3)
 
-src := $(shell pwd)
-src_sh := $(wildcard *.sh)
-src_py := $(wildcard *.py)
-src_pl := $(wildcard *.pl)
-src_cpp := $(wildcard *.cpp)
+script_sh := $(wildcard *.sh)
+script_py := $(wildcard *.py)
+script_pl := $(wildcard *.pl)
+script_all := $(script_sh) $(script_py) $(script_pl)
 
-build := bin
-build_cpp := $(addprefix $(build)/,$(basename $(src_cpp)))
+src_cpp := $(wildcard *.cpp)
+build_dir := out
+build_cpp := $(addprefix $(build_dir)/,$(basename $(src_cpp)))
 build_all := $(build_cpp)
 
-dst := $(PREFIX)/bin
-dst_sh := $(addprefix $(dst)/,$(basename $(src_sh)))
-dst_py := $(addprefix $(dst)/,$(basename $(src_py)))
-dst_pl := $(addprefix $(dst)/,$(basename $(src_pl)))
-dst_cpp := $(addprefix $(dst)/,$(basename $(src_cpp)))
-dst_all := $(dst_sh) $(dst_py) $(dst_pl) $(dst_cpp)
+exe_all := $(script_all) $(build_all)
 
-# Disable implicit rules.
-.SUFFIXES:
-
-.PHONY: all help clean lint
+.PHONY: all help install uninstall fmt lint clean
 
 all: $(build_all)
 
@@ -31,36 +20,22 @@ help:
 	@echo "Targets:"
 	@echo "all       build compiled scripts"
 	@echo "help      show this help message"
-	@echo "install   symlink scripts in $(PREFIX)"
-	@echo "uninstall remove installed symlimks"
+	@echo "install   symlink scripts using sim"
+	@echo "uninstall remove symlimks using sim"
 	@echo "fmt       format code"
 	@echo "lint      lint code"
 	@echo "clean     remove build output"
 
-install: $(dst_all)
+install:
+	sim install --no-ext $(exe_all)
 
 uninstall:
-	@for f in $(dst_all); do \
-		if [[ -L "$$f" ]] && [[ $$(readlink "$$f") = '$(src)/'* ]]; then \
-			echo "Removing $$f"; \
-			unlink "$$f"; \
-		elif [[ -f "$$f" ]]; then \
-			echo "Not removing $$f (did not come from this repository)"; \
-		fi; \
-	done
+	sim remove --target --quiet $(exe_all)
 
-$(dst)/%:
-	@test -n "$<" || { echo "$(notdir $@): unknown script"; false; }
-	@mkdir -p $(dst)
-	ln -sf $(src)/$< $@
+$(build_dir):
+	mkdir $@
 
-$(dst_sh): $(dst)/%: %.sh
-$(dst_py): $(dst)/%: %.py
-$(dst_pl): $(dst)/%: %.pl
-$(dst_cpp): $(dst)/%: $(build)/%
-
-$(build_cpp): $(build)/%: %.cpp
-	@mkdir -p $(build)
+$(build_cpp): $(build_dir)/%: %.cpp | $(build_dir)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 fmt:
@@ -68,7 +43,7 @@ fmt:
 	clang-format --style=file -i $(src_cpp)
 
 lint:
-	shellcheck -e SC1090 $(wildcard *.sh)
+	shellcheck $(script_sh)
 
 clean:
-	rm -rf $(build)
+	rm -rf $(build_dir)

@@ -6,7 +6,7 @@ These are just some scripts that I wrote and find useful.
 
 Run `make` to build "scripts" written in compiled languages.
 
-Run `make lint` to run lint shell scripts with [ShellCheck][].
+Run `make install` to install scripts. This requires [Sim].
 
 ## License
 
@@ -14,4 +14,4 @@ Run `make lint` to run lint shell scripts with [ShellCheck][].
 
 Scripts is available under the MIT License; see [LICENSE](LICENSE.md) for details.
 
-[ShellCheck]: https://www.shellcheck.net
+[Sim]: https://github.com/mk12/sim
