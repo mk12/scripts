@@ -114,7 +114,7 @@ qr_decode() {
         pad=$(printf "%0${pad}s" | tr '0' '=')
         domain=$(base64 -d <<< "$b64$pad")
         secret=$( \
-            curl -sSf -X POST https://$domain/push/v2/activation/$token \
+            curl -sSf -X POST "https://$domain/push/v2/activation/$token" \
             | tee response.json \
             | jq -r '.response.hotp_secret' \
             | python3 -c \
@@ -155,7 +155,7 @@ create_qr() {
     else
         uri="otpauth://hotp/$account?secret=$secret&counter=$counter&issuer=$issuer"
     fi
-    echo $uri
+    echo "$uri"
     qrencode -s 10 -o "$1" "$uri"
 }
 

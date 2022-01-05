@@ -2,13 +2,14 @@
 
 set -eufo pipefail
 
-# Need this because it's run from launchd.
+# Need to source .profile because it's run from launchd.
+# shellcheck source=../dotfiles/.profile
 source ~/.profile
 
-readonly prog=$(basename "$0")
-readonly plist="com.mitchellkember.backup.plist"
-readonly dest_plist="$HOME/Library/LaunchAgents/$plist"
-readonly backup_dir="$HOME/Dropbox/Backups"
+prog=$(basename "$0")
+plist="com.mitchellkember.backup.plist"
+dest_plist="$HOME/Library/LaunchAgents/$plist"
+backup_dir="$HOME/Dropbox/Backups"
 
 temp_dir=
 
@@ -18,7 +19,7 @@ only=
 
 usage() {
     cat <<EOS
-usage: $prog [-hi]
+Usage: $prog [-hi]
 
 This script backs things up to Dropbox:
 
@@ -26,10 +27,10 @@ This script backs things up to Dropbox:
 * Simplenote, using hiroshi/simplenote-backup
 
 Options:
-    -h  show this help message
-    -i  install a launchd agent for this script
-    -r  back up only repositories
-    -s  back up only Simplenote
+    -h  Show this help message
+    -i  Install a launchd agent for this script
+    -r  Back up only repositories
+    -s  Back up only Simplenote
 EOS
 }
 

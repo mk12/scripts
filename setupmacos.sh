@@ -78,7 +78,7 @@ clone_git_repo() {
 
 clone_git_repo_from_bundle() {
     if ! [[ -d "$pj/$1" ]]; then
-        bundle="$temp_dir/$1.gitbundle"
+        bundle="$backups/$1.gitbundle"
         [[ -f "$bundle" ]] || die "$bundle: not found"
         git clone -b master "$bundle" "$pj/$1"
     fi
@@ -198,7 +198,7 @@ setup_python() {
 setup_terminfo() {
     file=$(mktemp)
     step "Installing xterm-kitty.terminfo"
-    if ! TERMINFO= infocmp xterm-kitty &> /dev/null; then
+    if ! TERMINFO="" infocmp xterm-kitty &> /dev/null; then
         if [[ "${TERMINFO:-}" == '/Applications/kitty.app'* ]]; then
             infocmp xterm-kitty > "$file"
             tic -x -o ~/.terminfo "$file"
