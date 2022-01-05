@@ -1,23 +1,29 @@
 #!/bin/bash
 
+# Usage: $0 FILE_OR_DIRECTORY [STATE_FILE]
+
 # This script is used by the insert_fzf function in config.fish. It works as a
 # general preview tool for any file or directory.
 
 set -eufo pipefail
 
-# shellcheck disable=SC2088
-[[ $1 == "~/"* ]] && set -- "$HOME${1#\~}"
+x=$1
 
-if [[ -f "$1" ]]; then
+if [[ $# -ge 2 ]]; then
+    read -r -d: root < "$2"
+    [[ "$root" != . ]] && x=$root/$x
+fi
+
+if [[ -f "$x" ]]; then
     if command -v bat &> /dev/null; then
-        bat --plain --color=always -- "$1"
+        bat --plain --color=always -- "$x"
     else
-        cat -- "$1"
+        cat -- "$x"
     fi
-elif [[ -d "$1" ]]; then
+elif [[ -d "$x" ]]; then
     if command -v exa &> /dev/null; then
-        exa -a --color=always -- "$1"
+        exa -a --color=always -- "$x"
     else
-        ls -a --color=always -- "$1"
+        ls -a --color=always -- "$x"
     fi
 fi
