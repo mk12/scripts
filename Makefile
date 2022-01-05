@@ -3,7 +3,8 @@ CXXFLAGS := -std=c++17 -W -Wall $(if $(DEBUG),-O0 -g,-O3)
 script_sh := $(wildcard *.sh)
 script_py := $(wildcard *.py)
 script_pl := $(wildcard *.pl)
-script_all := $(script_sh) $(script_py) $(script_pl)
+script_fish := $(wildcard *.fish)
+script_all := $(script_sh) $(script_py) $(script_pl) $(script_fish)
 
 src_cpp := $(wildcard *.cpp)
 build_dir := out
@@ -12,22 +13,47 @@ build_all := $(build_cpp)
 
 exe_all := $(script_all) $(build_all)
 
+# These are the scripts I actively use.
+exe_install := \
+	24bitcolor.sh \
+	base16test.sh \
+	fzf-command-helper.sh \
+	fzf-preview-helper.sh \
+	goodnight.sh \
+	j.sh \
+	journallint.py \
+	kitty-bell-notify.sh \
+	noextensions.sh \
+	recall.sh \
+	tmux-session.sh \
+	tmux-set-cwd.sh \
+	unquarantine.sh \
+	z-projects.fish \
+	$(build_dir)/kitty-colors \
+	$(build_dir)/ledgerlint \
+	$(build_dir)/yank
+
+define usage
+Targets:
+	all        Build compiled scripts
+	help       Show this help message
+	install    Symlink scripts using sim
+	uninstall  Remove symlimks using sim
+	fmt        Format code
+	lint       Lint code
+	clean      Remove build output
+endef
+
 .PHONY: all help install uninstall fmt lint clean
 
 all: $(build_all)
 
 help:
-	@echo "Targets:"
-	@echo "all       build compiled scripts"
-	@echo "help      show this help message"
-	@echo "install   symlink scripts using sim"
-	@echo "uninstall remove symlimks using sim"
-	@echo "fmt       format code"
-	@echo "lint      lint code"
-	@echo "clean     remove build output"
+	$(info $(usage))
+	@:
 
 install:
-	sim install --no-ext $(exe_all)
+	sim install --no-ext $(exe_install)
 
 uninstall:
 	sim remove --target --quiet $(exe_all)
@@ -43,7 +69,7 @@ fmt:
 	clang-format --style=file -i $(src_cpp)
 
 lint:
-	shellcheck $(script_sh)
+	shellcheck $(wildcard *.sh)
 
 clean:
 	rm -rf $(build_dir)
