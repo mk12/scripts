@@ -13,3 +13,5 @@ awk 'BEGIN{
     }
     printf "\n";
 }'
+
+printf "\e[1mbold\e[0m \e[3mitalic\e[0m \e[4munderline\e[0m \e[9mstrikethrough\e[0m\n"
