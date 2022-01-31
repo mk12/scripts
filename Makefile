@@ -1,4 +1,4 @@
-CXXFLAGS := -std=c++17 -W -Wall $(if $(DEBUG),-O0 -g,-O3)
+CXXFLAGS := $(shell cat compile_flags.txt) $(if $(DEBUG),-O0 -g,-O3)
 
 script_sh := $(wildcard *.sh)
 script_py := $(wildcard *.py)
@@ -59,7 +59,7 @@ uninstall:
 	sim remove --target --quiet $(exe_all)
 
 $(build_dir):
-	mkdir $@
+	mkdir -p $@
 
 $(build_cpp): $(build_dir)/%: %.cpp | $(build_dir)
 	$(CXX) $(CXXFLAGS) -o $@ $^

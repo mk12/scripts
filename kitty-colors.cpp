@@ -26,6 +26,9 @@ Usage: kitty-colors [-h] [-c FILE] [-a | -p] [-f FRAMES] [-d DELAY]
 
 This script changes the terminal colors in kitty.
 
+Note: If you get "Connection refused" Python errors, it's probably because
+there's a stale control file in ~/.local/share/kitty.
+
 Flags:
     -h  display this help messge
     -p  print OSC codes only (no kitty remote-control or changing colors.conf)
@@ -38,6 +41,7 @@ Options:
 )EOS";
 
 struct Options {
+    bool print_only = false;
     bool animate = false;
 
     int frames = 100;
@@ -223,11 +227,13 @@ int main(int argc, char** argv) {
 
     Options options;
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-h") == 0) {
+        if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
             std::cout << USAGE;
             return 0;
         }
-        if (std::strcmp(argv[i], "-a") == 0) {
+        if (std::strcmp(argv[i], "-p") == 0) {
+            options.print_only = true;
+        } else if (std::strcmp(argv[i], "-a") == 0) {
             options.animate = true;
         } else if (std::strcmp(argv[i], "-c") == 0) {
             options.target = argv[++i];
@@ -264,6 +270,11 @@ int main(int argc, char** argv) {
         }
     }
 
+    if (options.print_only) {
+        set_colors_osc(parse_color_file(options.target.c_str()));
+        return 0;
+    }
+
     if (options.animate) {
         std::ifstream config_file(kitty_colors_conf_file());
         std::string token;
@@ -287,4 +298,5 @@ int main(int argc, char** argv) {
 
     update_running_kitties(options.target);
     update_kitty_conf(options.target);
+    return 0;
 }
