@@ -13,7 +13,7 @@
 
         <key>ProgramArguments</key>
         <array>
-            <string>/Users/mitchell/Projects/scripts/backup.sh</string>
+            <string>/Users/mitchell/Code/scripts/backup.sh</string>
         </array>
 
         <key>StandardErrorPath</key>
