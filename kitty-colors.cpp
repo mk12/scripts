@@ -37,7 +37,7 @@ Flags:
 Options:
     -c FILE    specify colors conf file (if omitted, you pick using fzf)
     -f FRAMES  number of animation frames (default: 50)
-    -d DELAY   delay in seconds between frames (default: 0 ms)
+    -d DELAY   delay in seconds between frames (default: 30 ms)
 )EOS";
 
 struct Options {
