@@ -17,8 +17,6 @@ exe_all := $(script_all) $(build_all)
 exe_install := \
 	24bitcolor.sh \
 	base16test.sh \
-	fzf-command-helper.sh \
-	fzf-preview-helper.sh \
 	goodnight.sh \
 	j.sh \
 	journallint.py \
@@ -52,7 +50,7 @@ help:
 	$(info $(usage))
 	@:
 
-install:
+install: $(build_all)
 	sim install --no-ext $(exe_install)
 
 uninstall:
