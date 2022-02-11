@@ -13,7 +13,7 @@ YEAR is a 4-digit year, like 2019.
 USDCAD is the exchange rate X such that CAD = USD * X
 
 Look up exchange rates here:
-https://fiscal.treasury.gov/reports-statements/treasury-reporting-rates-exchange/historical.html
+https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange
 
 Note: Unlike T1135, FBAR uses the exchange rate on the last day of the year.
 Note: Unlike T1135, FBAR uses the sum of the maxes of each account, not a single
