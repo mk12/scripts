@@ -43,7 +43,7 @@ gap() {
     printf "    "
 }
 
-show "0" "background" 0 18 7; gap; show "3" "comment"     7 0 0; gap; show "9" "directive" 16 0 0; echo
+show "0" "background" 0 18 7; gap; show "3" "comment"     8 0 0; gap; show "9" "directive" 16 0 0; echo
 show "8" "error/-"    1 0 0 ; gap; show "8" "error/-"     9 0 0; gap; show "f" "special"   17 0 0; echo
 show "b" "keyword/+"  2 0 0 ; gap; show "b" "keyword/+"  10 0 0; gap; show "1" "highlight" 18 0 7; echo
 show "a" "identifier" 3 0 0 ; gap; show "a" "identifier" 11 0 0; gap; show "2" "selection" 19 0 7; echo
