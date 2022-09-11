@@ -10,6 +10,8 @@ import sys
 
 from dateutil.parser import parse  # pip3 install python-dateutil
 
+# Note, this no longer exists with Music.app. Instead, you need to do File >
+# Library > Export Library, and then pass that file to this script.
 LIBRARY = Path.home() / "Music/iTunes/iTunes Library.xml"
 
 
