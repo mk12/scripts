@@ -17,6 +17,7 @@ exe_all := $(script_all) $(build_all)
 exe_install := \
 	24bitcolor.sh \
 	base16test.sh \
+	clean-icloud-dups.sh \
 	goodnight.sh \
 	j.sh \
 	journallint.py \
