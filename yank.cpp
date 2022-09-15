@@ -17,15 +17,20 @@ Copies standard input to the clipboard using the OSC 52 escape sequence. Assumes
 the terminal supports an unbounded payload like kitty does, so does not attempt
 to truncate it. Pass the -t flag to truncate to 8192 bytes.
 
-If $TMUX is set, yank also copies the input to the current tmux buffer. For best
-results, the tmux clipboard feature should be turned OFF:
+If $TMUX is set, yank wraps the escape sequence in a tmux passthrough envelope,
+and also sets the current tmux buffer for convenience. For best results, include
+the following in your tmux config:
 
-    # .tmux.conf
+    set -g allow-passthrough on
     set -g set-clipboard off
 
-If it is set to "external", tmux will intercept the OSC 52 sequence and attempt
-to set the clipboard itself. If set to "on", it will additionally set the tmux
-buffer. Both of these are made redundant by yank.
+The first option is required in tmux 3.3 and later, otherwise it won't convey
+the passthrough envelope to your terminal.
+
+The second option disables tmux clipboard support. If it is set to "external",
+tmux will intercept the OSC 52 sequence and attempt to set the clipboard itself
+(which won't work if you're in a remote ssh session). If set to "on", it will
+additionally set the tmux buffer. Both of these are made redundant by yank.
 )EOS";
 
 constexpr char base64_table[65] =
