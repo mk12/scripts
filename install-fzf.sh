@@ -2,7 +2,12 @@
 
 set -eufo pipefail
 
-dir="$PROJECTS/fzf"
+if [[ -z "$PROJECTS" ]]; then
+    echo >&2 "PROJECTS not set"
+    exit 1
+fi
+
+dir=$PROJECTS/fzf
 
 if [[ -d "$dir" ]]; then
     git -C "$dir" pull
