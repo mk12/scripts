@@ -11,11 +11,13 @@ extern "C" {
 namespace {
 
 constexpr const char* USAGE =
-    R"EOS(usage: yank [-ht]
+    R"EOS(usage: yank [-htn]
 
 Copies standard input to the clipboard using the OSC 52 escape sequence. Assumes
 the terminal supports an unbounded payload like kitty does, so does not attempt
-to truncate it. Pass the -t flag to truncate to 8192 bytes.
+to truncate it by default. Pass the -t flag to truncate to 8192 bytes.
+
+If the -n flag is given, does not write to the clipboard if the input is empty.
 
 If $TMUX is set, yank wraps the escape sequence in a tmux passthrough envelope,
 and also sets the current tmux buffer for convenience. For best results, include
@@ -86,16 +88,29 @@ int main(int argc, char** argv) {
     (void)argv;
     std::ios::sync_with_stdio(false);
     bool truncate = false;
-    if (argc > 1) {
-        if (argc == 2 && std::strcmp(argv[1], "-h") == 0) {
-            std::fputs(USAGE, stdout);
-            return 0;
-        }
-        if (argc == 2 && std::strcmp(argv[1], "-t") == 0) {
-            truncate = true;
-        } else {
+    bool nonempty = false;
+    for (int i = 1; i < argc; i++) {
+        const char* p = argv[i];
+        if (*p++ != '-') {
             std::fputs(USAGE, stderr);
             return 1;
+        }
+        char opt;
+        while ((opt = *p++)) {
+            switch (opt) {
+            case 'h':
+                std::fputs(USAGE, stdout);
+                return 0;
+            case 't':
+                truncate = true;
+                break;
+            case 'n':
+                nonempty = true;
+                break;
+            default:
+                std::fputs(USAGE, stderr);
+                return 1;
+            }
         }
     }
     const bool tmux = std::getenv("TMUX") != nullptr;
@@ -134,8 +149,11 @@ int main(int argc, char** argv) {
             len += additional;
         }
     }
+    if (nonempty && len == 0) {
+        return 0;
+    }
     const auto b64_len = base64_enc_size(len);
-    char *b64_buf = static_cast<char*>(std::malloc(b64_len));
+    char* b64_buf = static_cast<char*>(std::malloc(b64_len));
     base64_encode(b64_buf, buf, len);
     if (tmux) {
         const auto n = std::fwrite(buf, 1, len, tmux_pipe.get());
