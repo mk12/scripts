@@ -12,7 +12,7 @@ clone_or_update() {
     if [[ -d "$dir" ]]; then
         git -C "$dir" pull
     else
-        git clone git@github.com:mk12/$1.git "$dir"
+        git clone "git@github.com:mk12/$1.git" "$dir"
     fi
 }
 
