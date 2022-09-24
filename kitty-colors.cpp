@@ -227,7 +227,8 @@ int main(int argc, char** argv) {
 
     Options options;
     for (int i = 1; i < argc; ++i) {
-        if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
+        if (std::strcmp(argv[i], "-h") == 0 ||
+            std::strcmp(argv[i], "--help") == 0) {
             std::cout << USAGE;
             return 0;
         }
