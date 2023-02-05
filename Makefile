@@ -26,7 +26,7 @@ script_fish := $(wildcard *.fish)
 script_all := $(script_sh) $(script_py) $(script_pl) $(script_fish)
 
 src_cpp := $(wildcard *.cpp)
-bin_cpp := $(src_cpp:%.cpp=out/%)
+bin_cpp := $(src_cpp:%.cpp=bin/%)
 bin_all := $(bin_cpp)
 
 exe_all := $(script_all) $(bin_all)
@@ -46,9 +46,9 @@ exe_install := \
 	tmux-set-cwd.sh \
 	unquarantine.sh \
 	z-projects.fish \
-	out/kitty-colors \
-	out/ledgerlint \
-	out/yank
+	bin/kitty-colors \
+	bin/ledgerlint \
+	bin/yank
 
 .SUFFIXES:
 
@@ -75,10 +75,10 @@ lint:
 	shellcheck $(script_sh)
 
 clean:
-	rm -rf out
+	rm -rf bin
 
-out:
+bin:
 	mkdir $@
 
-$(bin_cpp): out/%: %.cpp | out
+$(bin_cpp): bin/%: %.cpp | bin
 	$(CXX) $(CXXFLAGS) -o $@ $^
