@@ -745,7 +745,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
             message = "expected 4 decimal places";
             goto error;
         }
-    } else if (commodity == "Audible") {
+    } else if (commodity == "Audible" || commodity == "Aeroplan") {
         if (places != -1) {
             message = "expected a whole number";
             goto error;
