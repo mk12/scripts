@@ -45,8 +45,7 @@ END {
 }' > "$json"
 
 index=$(jq 'to_entries | .[] | "\(.key)❯ \(.value.cmd)"' "$json" -r \
-    | fzf --scheme=history --height 100% --preview-window=down,95% \
-        --ansi --color=fg:7 \
+    | fzf --scheme=history --height 100% --preview-window=down,95% --ansi \
         --preview="jq '.[{n}] | .out' '$json' -r" \
     | rg '^\d+' -o)
 
