@@ -676,11 +676,11 @@ void check_note(Input& input, Comment comment, std::size_t expected_indent) {
 }
 
 void check_date(Input& input, std::string_view date) {
-    if (!(date.size() == 10 & date[0] >= '0' & date[0] <= '9' & date[1] >= '0' &
-          date[1] <= '9' & date[2] >= '0' & date[2] <= '9' & date[3] >= '0' &
-          date[3] <= '9' & date[4] == '/' & date[5] >= '0' & date[5] <= '1' &
-          date[6] >= '0' & date[6] <= '9' & date[7] == '/' & date[8] >= '0' &
-          date[8] <= '3' & date[9] >= '0' & date[9] <= '9')) {
+    if (!(date.size() == 10 && date[0] >= '0' && date[0] <= '9' && date[1] >= '0' &&
+          date[1] <= '9' && date[2] >= '0' && date[2] <= '9' && date[3] >= '0' &&
+          date[3] <= '9' && date[4] == '/' && date[5] >= '0' && date[5] <= '1' &&
+          date[6] >= '0' && date[6] <= '9' && date[7] == '/' && date[8] >= '0' &&
+          date[8] <= '3' && date[9] >= '0' && date[9] <= '9')) {
         input.error("ill-formed date: %.*s", static_cast<int>(date.size()),
                     date.data());
     }
@@ -740,7 +740,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
         goto error;
     } else if (commodity == "VTSAX" || commodity == "VTIAX" ||
                commodity == "VBTLX" || commodity == "VTRTS" ||
-               commodity == "GOOG") {
+               commodity == "VTTSX" || commodity == "GOOG") {
         if (places != 4) {
             message = "expected 4 decimal places";
             goto error;
