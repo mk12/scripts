@@ -45,6 +45,7 @@ exe_install := \
 	tmux-session.sh \
 	tmux-set-cwd.sh \
 	unquarantine.sh \
+	update-zig.sh \
 	z-projects.fish \
 	bin/kitty-colors \
 	bin/ledgerlint \
