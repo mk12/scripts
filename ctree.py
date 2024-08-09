@@ -4,7 +4,15 @@ import argparse
 from collections import defaultdict
 import sys
 
-parser = argparse.ArgumentParser(description="Convert path:count lines to a tree representation")
+parser = argparse.ArgumentParser(
+    description="""
+Convert path:count lines to a tree representation
+
+Example:
+    rg -c foo | ctree
+""",
+    formatter_class=argparse.RawTextHelpFormatter,
+)
 parser.add_argument("-L", "--level", type=int)
 parser.add_argument("-M", "--minimum", type=int, default=0)
 args = parser.parse_args()
@@ -23,12 +31,16 @@ for line in sys.stdin:
         node = node["children"][component]
         node["count"] += count
 
+
 def go(indent, path, node):
     count = node["count"]
     if count < args.minimum:
         return
     print(f"{indent}{path} {count}")
-    for name, child in sorted(node["children"].items(), key=lambda item: item[1]["count"], reverse=True):
+    for name, child in sorted(
+        node["children"].items(), key=lambda item: item[1]["count"], reverse=True
+    ):
         go(indent + "  ", name, child)
+
 
 go("", ".", tree)
