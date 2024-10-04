@@ -21,7 +21,7 @@ get() {
     case $1 in
         dictionary.com)
             curl -s "https://www.$1/browse/$word" \
-            | rg '\\"pronunciations\\":\[\{\\"ipa\\":\\"(.*?)\\"' -r '$1' -o
+            | rg '\\"pronunciation\\":\{\\"ipa\\":\\"(.*?)\\"' -r '$1' -o
             ;;
         tophonetics.com)
             curl -s "https://$1" \
