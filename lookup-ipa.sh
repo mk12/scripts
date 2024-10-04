@@ -21,7 +21,7 @@ get() {
     case $1 in
         dictionary.com)
             curl -s "https://www.$1/browse/$word" \
-            | htmlq --text .pron-ipa-content
+            | rg '\\"pronunciations\\":\[\{\\"ipa\\":\\"(.*?)\\"' -r '$1' -o
             ;;
         tophonetics.com)
             curl -s "https://$1" \
@@ -29,11 +29,11 @@ get() {
                 --data-urlencode output_dialect=am \
                 --data-urlencode output_style=only_tr \
                 --data-urlencode submit="Show transcription" \
-            | htmlq --text .transcribed_word
+            | htmlq --text '#transcr_output'
             ;;
         merriam-webster.com)
             curl -s "https://www.$1/dictionary/$word" \
-            | htmlq --text .pr
+            | htmlq --text 'a[title^="How to pronounce"]'
             ;;
     esac
 }
