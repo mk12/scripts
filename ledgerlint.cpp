@@ -726,7 +726,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
     }
     places = static_cast<int>(value.size() - p) - 1;
     if (commodity == "CAD" || commodity == "USD" || commodity == "EUR" ||
-        commodity == "VMFXX") {
+        commodity == "GBP" || commodity == "VMFXX") {
         if (div == AMOUNT && places != 2) {
             message = "expected 2 decimal places";
             goto error;
@@ -745,7 +745,7 @@ void check_amount(Input& input, std::string_view amount, const Division div) {
             message = "expected 4 decimal places";
             goto error;
         }
-    } else if (commodity == "Audible" || commodity == "Aeroplan") {
+    } else if (commodity == "Audible" || commodity == "Aeroplan" || commodity == "Bilt") {
         if (places != -1) {
             message = "expected a whole number";
             goto error;
