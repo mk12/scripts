@@ -33,26 +33,37 @@ fi
 dest=${dirs[$n-1]}
 unset 'dirs[$n-1]'
 
-rsync_list() {
-    rsync --dry-run -av --exclude .DS_Store "$@" | awk '
-        /^sending incremental file list$/ { p = 1; next; }
-        /^$/ { exit; }
-        p { print; }
-    '
+list() {
+    fd . --type f --unrestricted --exclude '.DS_Store' --base-directory "$1" | sort
 }
+
+size() {
+    stat -f%z "$1"
+}
+
+run() {
+    echo "> $@"
+    if [[ $dry_run = false ]]; then
+        "$@"
+    fi
+}
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
 
 for dir in "${dirs[@]}"; do
     echo "Merging: $dir -> $dest"
-    while read -r line; do
-        if [[ ! -d "$dest/$line" ]]; then
-            echo >&2 "error: file $line already exists"
+    list "$dir" > "$tmp/a"
+    list "$dest" > "$tmp/b"
+    while read -r file; do
+        if ! run cmp "$dir/$file" "$dest/$file"; then
+            echo >&2 "$file differs"
             exit 1
         fi
-    done < <(rsync_list --existing "$dir/" "$dest/")
-    while read -r line; do
-        if [[ ! -e "$dest/$line" ]]; then
-            echo "would copy $line"
-        fi
-    done < <(rsync_list --ignore-existing "$dir/" "$dest/")
-    break
+        run rm "$dir/$file"
+    done < <(comm -12 "$tmp/a" "$tmp/b")
+    while read -r file; do
+        run mkdir -p "$dest/$(dirname "$file")"
+        run mv "$dir/$file" "$dest/$file"
+    done < <(comm -23 "$tmp/a" "$tmp/b")
 done
