@@ -2,14 +2,14 @@
 
 set -eufo pipefail
 
-# This script moves the contents of Today.txt to the end of Journal.txt,
+# This script moves the contents of Today.md to the end of $YYYY.md,
 # preceded by a heading of the form "# Weekday, Day Month Year".
 
 name=$(basename "$0")
 usage="usage: $name [-hfdl] [-t file] [-j file] [-v[+|-]val[ymwdHMS]]"
 
-today=$PROJECTS/journal/Today.txt
-journal=$PROJECTS/journal/Journal.txt
+today=~/Notes/Today.md
+journal=$PROJECTS/journal/$(date +%Y).md
 force=false
 offset=-5H
 language=false

@@ -2,6 +2,9 @@
 
 set -eufo pipefail
 
+echo >&2 "This is obsolete since I don't use iCloud Drive anymore"
+exit 1
+
 cd "$OBSIDIAN_VAULT"
 
 run() {

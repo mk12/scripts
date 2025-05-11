@@ -1,5 +1,5 @@
 #!/bin/bash
 
-journal=$PROJECTS/journal/Journal.txt
+journal=$(ls $PROJECTS/journal/20*.md | sort -R | head -n1)
 line=$(((RANDOM % $(wc -l < "$journal")) + 1))
-nvim -c "Goyo | $line | set ft=markdown" "$journal"
+nvim "$journal:$line"
