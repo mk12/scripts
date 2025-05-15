@@ -77,3 +77,4 @@ case $REPLY in
     n|N) git reset; exit 0 ;;
 esac
 git commit -m "Add entry"
+git push
