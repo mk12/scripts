@@ -1,0 +1,84 @@
+#!/usr/bin/env ysh
+
+cd ~/Notes
+
+const conflict_files = glob('*.sync-conflict-*')
+if (not conflict_files) {
+    echo "There are no files with conflicts"
+    exit
+}
+
+var list = []
+var map = {}
+for conflict_file in (conflict_files) {
+    const file = conflict_file.replace(/ '.sync-conflict-' !['.']+ /, '')
+    if (file in map) {
+        error "Multiple conflict files for $file"
+    }
+    call list->append(file)
+    setvar map[file] = conflict_file
+}
+
+echo "Found $[len(list)] conflicting file(s):"
+for i, file in (list) {
+    echo "$[i + 1]. $file"
+}
+read -p "Which do you want to resolve? [1] " reply
+const local = list[(reply or 1) - 1]
+const remote = map[local]
+
+const tmp = $(mktemp -d)
+trap "rm -rf $tmp" EXIT
+
+if boolstatus git diff --no-index -u -U999999 $local $remote > $tmp/diff {
+    error "The files appear to be the same!"
+}
+
+cd $tmp
+
+gawk -v remote=$remote '''
+    /^@@/ { s = 1; next; }
+    !s { next; }
+    /^[^ +-]/ { next; }
+    { line = substr($0, 2); print line >> "common.md"; }
+    /^-/ { c = 1; del = del line "\n"; }
+    /^+/ { c = 1; add = add line "\n"; }
+    /^ / {
+        if (c) {
+            printf "<<<<<<< HEAD\n%s=======\n%s>>>>>>> ORIGIN (%s)\n", del, add, remote;
+            c = 0; del = ""; add = "";
+        }
+        print line;
+    }
+''' < diff > merge
+rm diff
+
+# Fake merge conflict
+git init -q
+touch $local
+git add $local
+git commit -qm "base"
+git switch -qc local
+mv common.md $local
+git commit -qam "local"
+git switch -q main
+git switch -qc remote
+# Just want this to be different from local (common.md).
+echo "::::::: REMOTE :::::::" > $local
+git commit -qam "remote"
+git switch -q local
+if boolstatus git merge remote > /dev/null {
+    error "Expected git merge to have nonzero exit code"
+}
+mv merge $local
+mkdir .zed
+echo '{"remove_trailing_whitespace_on_save": false}' > .zed/settings.json
+zed . $local
+read -p "Press enter when done resolving..."
+if rg -q '<{7}|={7}|>{7}' $local {
+    error "There are still conflict markers"
+}
+
+cd ~/Notes
+trash $local $remote
+mv $tmp/$local $local

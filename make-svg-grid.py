@@ -55,17 +55,26 @@ if args.chart:
         for j in range(y):
             cell = chart[j][i]
             match cell:
-                case ".":
+                case ".": # knit
                     continue
-                case "x":
+                case "x": # purl
                     # lines += f"M{(i+0.25)*s:g} {(j+0.5)*s:g}l{s/2:g} 0"
                     filled += f'<circle cx="{(i+0.5)*s:g}" cy="{(j+0.5)*s:g}" r="{s*0.15:g}"/>\n'
-                case "o":
+                case "#": # blacked out
+                    filled += f'<rect x="{i*s:g}" y="{j*s:g}" width="{s:g}" height="{s:g}" opacity="0.5"/>\n'
+                case "o": # yo
                     stroked += f'<circle cx="{(i+0.5)*s:g}" cy="{(j+0.5)*s:g}" r="{s*0.2:g}"/>\n'
-                case "/":
+                case "/": # k2tog
                     lines += f"M{(i+0.3)*s:g} {(j+0.7)*s:g}l{s*0.4:g} {-s*0.4:g}"
-                case "\\":
+                case "\\": # ssk
                     lines += f"M{(i+0.7)*s:g} {(j+0.7)*s:g}l{-s*0.4:g} {-s*0.4:g}"
+                case "m": # k3tog
+                    lines += f"M{(i+0.3)*s:g} {(j+0.7)*s:g}l{s*0.2:g} {-s*0.2:g}l{s*0.2:g} {s*0.2:g}m{-s*0.2:g} 0l0 {-s*0.2:g}l{s*0.2:g} {-s*0.2:g}"
+                case "w": # kfbf
+                    lines += f"M{(i+0.3)*s:g} {(j+0.3)*s:g}l{s*0.2:g} {s*0.4:g}l{s*0.2:g} {-s*0.4:g}m{-s*0.2:g} 0l0 {s*0.4:g}"
+                case "%": # k2tog, knit in first st
+                    lines += f"M{(i+0.3)*s:g} {(j+0.7)*s:g}l{s*0.4:g} {-s*0.4:g}l0 {s*0.4:g}"
+                    # filled += f'<circle cx="{(i+0.675)*s:g}" cy="{(j+0.675)*s:g}" r="{s*0.05:g}"/>\n'
                 case _:
                     raise Exception(f"unexpected chart symbol '{cell}'")
             bg += f"M{i*s:g} {j*s:g}l{s:g} 0l0 {s:g}l-{s:g} 0z"
@@ -92,7 +101,7 @@ if args.debug:
 """
 
 svg = f"""\
-<svg viewBox="-{m} -{m} {fw+m:g} {fh+m:g}" style="max-width: {fw+m:g}px" fill="currentColor">
+<svg viewBox="-{m} -{m} {fw+m:g} {fh+m:g}" width="{fw+m:g}" height="{fh+m:g}" fill="currentColor">
 {debug_rect}{marks}<path fill="none" stroke="currentColor"{stroke_width} d="{grid_d}"/>
 <g font-size="{f}px" font-family="Arial" text-anchor="middle">
 {"\n".join(labels)}

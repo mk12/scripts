@@ -4,11 +4,17 @@ set -eufo pipefail
 
 usage() {
     cat <<EOS
-$0 [-hn] FILE
+$0 [-hne] FILE
+
+Render <!-- knitting chart: --> comments to SVG.
+
+Options:
+    -n  Dry run (print rather than overwriting)
+    -e  Watch for changes and rerun with entr
 EOS
 }
 
-grid_script=$PROJECTS/scripts/make-svg-grid.py
+grid_script=$PROJECTS/mk12-scripts/make-svg-grid.py
 
 flags='-i inplace'
 entr=false
