@@ -1,13 +1,22 @@
 #!/usr/bin/env bun
 
 import { parseArgs } from "util";
-import { utimes } from "fs/promises";
+import fs from "fs/promises";
 import process from "process";
 
 const chatUrlPrefix = "https://chatgpt.com/c/";
 
+const haveBun = typeof Bun !== "undefined";
+async function loadFileJson(path) {
+  return haveBun ? Bun.file(path).json() : JSON.parse(await fs.readFile(path));
+}
+async function fileExists(path) {
+  return haveBun ? Bun.file(path).exists() : fs.stat(path).then(() => true).catch(() => false);
+}
+const writeFile = haveBun ? Bun.write : fs.writeFile;
+
 async function conversations(jsonPath, { id, after }) {
-  const list = await Bun.file(jsonPath).json();
+  const list = await loadFileJson(jsonPath);
   if (id) {
     for (const conversation of list) {
       if (conversation.id === id) {
@@ -100,7 +109,7 @@ function postProcess(msg, chatgpt) {
 }
 
 const args = parseArgs({
-  args: Bun.argv,
+  args: process.argv,
   options: {
     out: { type: "string" },
     after: { type: "string" },
@@ -113,7 +122,7 @@ const args = parseArgs({
 
 function usageAndExit(code) {
   console.log(`\
-Usage: ${Bun.argv[1]} JSON_FILE [CHAT_ID] [--out OUT_DIR] [--after DATE]
+Usage: ${process.argv[1]} JSON_FILE [CHAT_ID] [--out OUT_DIR] [--after DATE]
 
 Convert ChatGPT conversations.json to Markdown files
 
@@ -152,9 +161,9 @@ for (const conversation of await conversations(jsonPath, { id, after })) {
     const base = `${outDir}/${getTitle(conversation)}`;
     let path = `${base}.md`;
     let n = 1;
-    while (await Bun.file(path).exists()) path = `${base} (${++n}).md`;
+    while (await fileExists(path)) path = `${base} (${++n}).md`;
     const updated = conversation.update_time;
-    Bun.write(path, content).then(() => utimes(path, updated, updated));
+    writeFile(path, content).then(() => fs.utimes(path, updated, updated));
   } else {
     console.log(content);
   }
