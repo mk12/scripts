@@ -11,7 +11,12 @@ async function loadFileJson(path) {
   return haveBun ? Bun.file(path).json() : JSON.parse(await fs.readFile(path));
 }
 async function fileExists(path) {
-  return haveBun ? Bun.file(path).exists() : fs.stat(path).then(() => true).catch(() => false);
+  return haveBun
+    ? Bun.file(path).exists()
+    : fs
+        .stat(path)
+        .then(() => true)
+        .catch(() => false);
 }
 const writeFile = haveBun ? Bun.write : fs.writeFile;
 
@@ -38,7 +43,7 @@ async function conversations(jsonPath, { id, after }) {
   return list;
 }
 
-function render(conversation) {
+function render(conversation, { includeFrontmatter}) {
   const created = parseDate(conversation.create_time);
   const messages = [];
   let node = conversation.current_node;
@@ -68,10 +73,12 @@ function render(conversation) {
     node = node.parent;
   }
   messages.reverse();
-  return `\
+  const frontmatter = includeFrontmatter ? `\
 ---
 created: ${created.toISOString().slice(0, 10)}
 ---
+` : "";
+  return frontmatter + `\
 ${chatUrlPrefix}${conversation.id}
 
 ${messages.join("\n").trimEnd()}`;
@@ -113,6 +120,7 @@ const args = parseArgs({
   options: {
     out: { type: "string" },
     after: { type: "string" },
+    "no-frontmatter": { type: "boolean" },
     h: { type: "boolean" },
     help: { type: "boolean" },
   },
@@ -133,8 +141,9 @@ If CHAT_ID is provided, only converts that conversation.
 You can also just provide the full URL.
 
 Options:
-    --out OUT_DIR  Write Markdown files in this directory
-    --after DATE   Only convert conversations updated after this time
+    --out OUT_DIR     Write Markdown files in this directory
+    --after DATE      Only convert conversations updated after this time
+    --no-frontmatter  Don't emit frontmatter (with "created" property)
 `);
   process.exit(code);
 }
@@ -154,9 +163,10 @@ const after = args.values.after;
 if (!(idOrUrl || outDir)) die("must provide either CHAT_ID or --out");
 if (idOrUrl && after) die("CHAT_ID and --after are mutually exclusive");
 const id = idOrUrl && removePrefix(idOrUrl, chatUrlPrefix);
+const includeFrontmatter = !args.values["no-frontmatter"];
 
 for (const conversation of await conversations(jsonPath, { id, after })) {
-  const content = render(conversation);
+  const content = render(conversation, { includeFrontmatter});
   if (outDir) {
     const base = `${outDir}/${getTitle(conversation)}`;
     let path = `${base}.md`;
