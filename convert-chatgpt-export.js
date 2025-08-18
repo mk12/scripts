@@ -107,6 +107,8 @@ function postProcess(msg, chatgpt) {
   if (chatgpt) {
     // Remove citation/metadata markers.
     msg = msg.replace(/\ue200.*?\ue201/g, "");
+    // Remove other weird markers.
+    msg = msg.replace(/[\ue203\ue204\ue206]/g, "");
   } else {
     // Obsidian syntax
     // https://help.obsidian.md/callouts
