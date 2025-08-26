@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eufo pipefail
+
 tmp=$(mktemp)
 trap 'rm -rf "$tmp"' EXIT
 

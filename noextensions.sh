@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eufo pipefail
+
 # This script hides the file extensions (in the Finder) of all the files in the
 # given directory.
 

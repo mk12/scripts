@@ -33,4 +33,3 @@ END {
     printf "Distributed %.2f\n", total - subtotal > "/dev/stderr";
 }
 ' <(echo "$input") <(echo "$input") | yank
-
