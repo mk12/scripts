@@ -13,7 +13,6 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
-#include <vector>
 
 extern "C" {
 #include <sys/wait.h>
