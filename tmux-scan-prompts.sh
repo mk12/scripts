@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -Eeufo pipefail
+trap 'echo >&2 "$0:$LINENO [$?]: $BASH_COMMAND"' ERR
 
 if [[ -z "$TMUX" ]]; then
     echo >&2 "error: not in tmux"

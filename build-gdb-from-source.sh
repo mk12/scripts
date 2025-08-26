@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -Eeufo pipefail
+trap 'echo >&2 "$0:$LINENO [$?]: $BASH_COMMAND"' ERR
 
 readonly gdb=gdb-13.2
 readonly python=python3.11

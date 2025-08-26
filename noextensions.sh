@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -Eeufo pipefail
+trap 'echo >&2 "$0:$LINENO [$?]: $BASH_COMMAND"' ERR
 
 # This script hides the file extensions (in the Finder) of all the files in the
 # given directory.

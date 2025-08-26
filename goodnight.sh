@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -Eeufo pipefail
+trap 'echo >&2 "$0:$LINENO [$?]: $BASH_COMMAND"' ERR
 
 # This script moves the contents of Today.md to the end of $YYYY.md,
 # preceded by a heading of the form "# Weekday, Day Month Year".

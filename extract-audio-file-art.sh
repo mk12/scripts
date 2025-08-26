@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -eufo pipefail
+set -Eeufo pipefail
+trap 'echo >&2 "$0:$LINENO [$?]: $BASH_COMMAND"' ERR
 
 if [[ -d "$1" ]]; then
     set -- "$(find "$1" -name '*.m4a' -o -name '*.mp3' | head -n1)"
