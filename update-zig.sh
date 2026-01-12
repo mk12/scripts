@@ -18,7 +18,7 @@ install() {
     key=${2#key=}
     dir=${3#dir=}
     index_url=$4
-    run cd ~/Documents/"$name"
+    run cd /usr/local/"$name"
     fd -q -d 1 -e tar -e xz && die "There is already a .tar or .xz file"
     read -r url shasum < <(
         run curl -sL "$index_url" \
@@ -26,6 +26,10 @@ install() {
     id=${url##*/}
     id=${id%.tar.xz}
     [[ -z "$id" ]] && die "Failed to extract id"
+    if [[ -d "$id" ]]; then
+        echo "$id already exists"
+        return
+    fi
     [[ -n "$dir" ]] && mkdir "$id"
     run curl -LO "$url"
     run shasum --check -a 256 <<< "$shasum  $id.tar.xz"
