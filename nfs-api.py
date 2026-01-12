@@ -14,6 +14,7 @@ def sha1(s):
 parser = argparse.ArgumentParser(description="Makes a NearlyFreeSpeech API call")
 parser.add_argument("-l", "--login", required=True)
 parser.add_argument("-k", "--api-key", required=True)
+parser.add_argument("-p", "--post", action="store_true")
 parser.add_argument("-b", "--body")
 parser.add_argument("uri")
 args = parser.parse_args()
@@ -36,6 +37,8 @@ print(f"Deriving hash from: {text}")
 print(f"Header: {header}")
 
 curl_cmd = ["curl", full_uri, "--header", header]
+if args.post:
+    curl_cmd.extend(["-X", "POST"])
 if args.body:
     curl_cmd.extend(["--data-raw", args.body])
 subprocess.run(curl_cmd, check=True)
