@@ -28,7 +28,9 @@ const local = list[(reply or 1) - 1]
 const remote = map[local]
 
 const tmp = $(mktemp -d)
-trap "rm -rf $tmp" EXIT
+trap --add EXIT {
+    rm -rf $tmp
+}
 
 if boolstatus git diff --no-index -u -U999999 $local $remote > $tmp/diff {
     error "The files appear to be the same!"

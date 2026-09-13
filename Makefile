@@ -44,6 +44,7 @@ exe_install := \
 	recall.sh \
 	tmux-session.sh \
 	tmux-set-cwd.sh \
+	tmux-window.sh \
 	unquarantine.sh \
 	update-zig.sh \
 	z-projects.fish \
