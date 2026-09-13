@@ -100,7 +100,15 @@ function getTitle(conversation) {
     .replace(/(\S): /, "$1 - ")
     .replaceAll(":", "-")
     .replaceAll("/", "\u29f8") // big solidus
-    .replaceAll("\\", "\u29f9"); // big reverse solidus
+    .replaceAll("\\", "\u29f9") // big reverse solidus
+    .replaceAll("?", "\uff1f")  // fullwidth question mark
+    .replaceAll("*", "\uff0a")  // fullwidth asterisk
+    .replaceAll('"', "\u201c")  // left double quotation mark
+    .replaceAll("<", "\u276c")  // medium left-pointing angle bracket
+    .replaceAll(">", "\u276d")  // medium right-pointing angle bracket
+    .replaceAll("|", "\u2758")  // light vertical bar
+    .replace(/[\r\n]+/g, " ")   // newlines → space
+    .trim();
 }
 
 function postProcess(msg, chatgpt) {
